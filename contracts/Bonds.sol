@@ -35,7 +35,7 @@ interface paymentContract {
     function borrower() external view returns(address);
 
     /// @dev can only be called by bonds contract. Updates the total due
-    function addInterest(uint256 _amm) external;
+    function addInterest(uint256 _amm) external returns(bool);
 
     /// @dev is used to make sure new loans can only be minted if actually new
     function isComplete() external returns(bool);
@@ -112,7 +112,7 @@ contract Bonds is ERC1155 {
     * @notice function calculates interest earned over time staking and mints that along with your staking balance
     * @notice the addInterest function (which only this contract can preform) also updates total ammount due to contract
      */
-    function unstakeAll() external {
+    function unstakeAll() external returns(bool){
         require(staking[msg.sender].staking, "You are not staking any NFTs");
         uint256 id = staking[msg.sender].ID; 
         uint256 amm = staking[msg.sender].ammount;
@@ -127,10 +127,16 @@ contract Bonds is ERC1155 {
         //Call the payment contract before minting or transfering any tokens
         paymentContract pc = paymentContract(address(uint160(id)));
         uint256 toMint = x * (amm / pc.interestRateInverse());
-        //Update the balance with new interest
-        pc.addInterest(toMint);
+        bool r;                 //Store return so we can call other contract before mint funciton. Don't want callback attacks
+        //Update the balance with new interest. Store return value based on response.
+        if(pc.addInterest(toMint)){
+            r = true;
+        }else{
+            r = false;
+        }
         //safeTransferFrom(address(this), msg.sender, id, amm, ""); This causes an issue. It thinks itself is not approved. Just going to mint for now
         _mint(msg.sender, id, toMint+amm, "");
+        return r;
         
     }
     

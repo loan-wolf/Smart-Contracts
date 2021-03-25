@@ -102,28 +102,40 @@ contract SimpleEthPayment is ERC1155Holder{
     }
     
     /**
-    * @notice This contract is not very forgiving. Miss one payment and you're marked as delinquent
+    * @notice This contract is not very forgiving. Miss one payment and you're marked as delinquent. Unless contract is complete
     * @return if delinquent or not. Meaning missed a payment
      */
-    function isDelinquent() external view incomplete returns(bool){
-        return block.timestamp >= paymentDueDate;
+    function isDelinquent() external view returns(bool){
+        return (block.timestamp >= paymentDueDate && !isComplete());
     }
     
     /**
     * @notice Called each time new NFTs are minted by staking
     * @param _amm the ammount of interest to add
+    * @return true if added. Will not add interest if payment has been completed.
+    *This prevents lenders from refusing to end a loan when it is rightfully over by forever
+    *increasing the totalPaymentsValue through interest staking and never fully collecting payment.
+    *This also means that if lenders do not realize interest gains soon enough they may not be able to collect them before
+    *the borrower can complete the loan.
      */
-    function addInterest(uint256 _amm) onlyBonds external{
-        totalPaymentsValue += _amm;
+    function addInterest(uint256 _amm) onlyBonds external returns(bool){
+        if(!isComplete()){
+            totalPaymentsValue += _amm;
+            return true;
+        }else{
+            return false;
+        }
     }
-
+    
     /**
-    * @notice helper function. External because it's used in an interface
+    * @notice helper function
     * @return return if the contract is payed off or not as bool
      */
-    function isComplete() external view returns(bool){
+    function isComplete() public view returns(bool){
         return paymentComplete >= totalPaymentsValue;
     }
+
+
 
 
 }
