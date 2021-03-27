@@ -2,11 +2,11 @@
 pragma solidity ^0.8.0;
 
 //For Remix:
-import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/token/ERC1155/ERC1155.sol";
-import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/token/ERC1155/utils/ERC1155Holder.sol";
+//import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/token/ERC1155/ERC1155.sol";
+//import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/token/ERC1155/utils/ERC1155Holder.sol";
 //For Local:
-//import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
-//import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
+import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
+import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
 
 /**
 * @title SimpleEthPayment
@@ -92,7 +92,7 @@ contract SimpleEthPayment is ERC1155Holder{
     * @param _amm is the ammount to collect (and trade in)
      */
     function collect(uint256 _amm) external{
-        require(awaitingCollection <= _amm, "There is not enough payments ready for collection yet. You must wait until the borrower makes the next payment");
+        require(awaitingCollection >= _amm, "There is not enough payments ready for collection yet. You must wait until the borrower makes the next payment");
         ERC1155 nft = ERC1155(bondContract);
         uint256 id = uint256(uint160(address(this)));
         require(nft.balanceOf(msg.sender, id) >= _amm, "You do not have the bond balance required to make this collection");
