@@ -18,5 +18,18 @@ SimpleEthPayment.sol
 Example of a payment contract. Each loan in this system needs it's own payment contract that specifies (and enforces) the details of the loan. In the future I'd love to make the raw necesseties for this contract well documented so it's easier to create payment contracts
 in accordance with the standard. At the very least have a simpleERCPayment as well.
 
+Truffle Tests
+-------------
+
+Truffle tests can be run by running
+
+`truffle test`
+
+Testing is done with the Chai JS library and tests can be added under 
+
+`test/loanwolf.test.js`
+
+Feel free to add tests
+
 
 
