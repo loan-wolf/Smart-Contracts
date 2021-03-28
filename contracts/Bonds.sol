@@ -55,6 +55,7 @@ interface paymentContract {
 *   -See if holding functions can be imported/interfaced
 *   -Create interface for this contract. Seperate file
 *   -Move metadata url to non magic variable
+*   -Replace stake with erc1155Received
  */
 contract Bonds is ERC1155 {
     
@@ -99,6 +100,7 @@ contract Bonds is ERC1155 {
     * @param _amm is the ammount to stake
      */
     function stake(uint256 _id, uint256 _amm) external {
+        require(!staking[msg.sender].staking, "as of v1, you cannot stake multiple tokens or at multiple times");
         safeTransferFrom(msg.sender, address(this), _id, _amm, "");
         staking[msg.sender] = IOU(
             true,
@@ -111,6 +113,7 @@ contract Bonds is ERC1155 {
     /**
     * @notice function calculates interest earned over time staking and mints that along with your staking balance
     * @notice the addInterest function (which only this contract can preform) also updates total ammount due to contract
+    * @return if interest was successfully generated. May not succeed if payment is complete
      */
     function unstakeAll() external returns(bool){
         require(staking[msg.sender].staking, "You are not staking any NFTs");
@@ -145,7 +148,7 @@ contract Bonds is ERC1155 {
     * @param _who is who to check
     * @return the number of periods
      */
-    function getAccruances(address _who) internal view returns(uint256) {
+    function getAccruances(address _who) public view returns(uint256) {
         IOU memory iou = staking[_who];
         require(iou.staking,"You are not staking any NFTs");
         uint256 accrualPeriod = paymentContract(address(uint160(iou.ID))).accrualPeriod();
