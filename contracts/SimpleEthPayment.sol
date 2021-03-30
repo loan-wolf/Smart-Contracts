@@ -25,6 +25,7 @@ import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
 contract SimpleEthPayment is ERC1155Holder{
     
     //State Variables
+    bool public issued;
     address public bondContract;
     address public borrower;
     //bytes32 merkleRoot;
@@ -49,6 +50,7 @@ contract SimpleEthPayment is ERC1155Holder{
     * @param _accrualPeriod the time it takes for interest to accrue in seconds
      */
     constructor(address _bondContract, uint256 _minPayment, uint256 _paymentPeriod, uint256 _principal, uint256 _inverseInterestRate, uint256 _accrualPeriod){
+        issued = false;
         borrower = msg.sender;
         bondContract = _bondContract;
         minPayment = _minPayment;
@@ -127,14 +129,20 @@ contract SimpleEthPayment is ERC1155Holder{
         }
     }
     
+    /*
+    * @notice called when bonds are issued so as to make sure lender can only mint bonds once.
+     */
+    function issueBonds() external onlyBonds{
+        issued = true;
+    }
+    
     /**
     * @notice helper function
     * @return return if the contract is payed off or not as bool
      */
     function isComplete() public view returns(bool){
-        return paymentComplete >= totalPaymentsValue;
+        return paymentComplete >= totalPaymentsValue || !issued;
     }
-
 
 
 
