@@ -1,69 +1,20 @@
 /// SPDX-License-Identifier: None
 pragma solidity ^0.8.0;
 
-//For Remix:
-//import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/token/ERC1155/ERC1155.sol";
-//For Local:
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
-/**
-* @title paymentContract
-* @author Carson Case
-*
-* @dev interface for paymentContract
-*As of right now, each payment contract can only have 1 address (borrower).
-*And they can only mint identical NFTs. In the future I'd like to have the
-*standard allow for shared use of the contracts as it can make things a
-*lot more user friendly.
-*
-* @notice these are the REQUIRED functions of a pyament contract.
-*More is possible and encouraged. But these are the only ways that the bonds
-*contract will interact with them
- */
-interface paymentContract {
-
-    /// @dev used to define a new loans quantity of tokens to mint
-    function principal() external view returns(uint256);
-
-    /// @dev used to get accruances while staking
-    function accrualPeriod() external view returns(uint256);
-   
-    /// @dev used to calculate interest when unstaking
-    function interestRateInverse() external view returns(uint256);
-
-    /// @dev used to check if borrower is calling a function
-    function borrower() external view returns(address);
-
-    /// @dev is used to make sure borrower can only issue once
-    function issued() external view returns(bool);
-    
-    /// @dev can only be called by bonds contract. Updates the total due
-    function addInterest(uint256 _amm) external returns(bool);
-
-    /// @dev is used to make sure new loans can only be minted if actually new
-    function isComplete() external returns(bool);
-    
-    /// @dev is called on issuance
-    function issueBonds() external;
-}
-
-
+import {IERC20PaymentStandard} from './IERC20PaymentStandard.sol';
 /**
 * @title Bonds
 * @author Carson Case
-*
-* @dev bellow are some notes on improvements
-*   -figure out compound staking interest
-*       *compare complexity/gas
-*   -allow multiple users/loans per contract
-*   -unstakeAmmount()
-*   -Fix issue with unstakeAll not sending nfts but instead minting
-*   -See if holding functions can be imported/interfaced
-*   -Create interface for this contract. Seperate file
-*   -Move metadata url to non magic variable
-*   -Replace stake with erc1155Received
+* @notice Bonds mints ERC1155 tokens that represent ownership of a loan specified by a Payment Contract. These bonds can accrue interest and be exchanged for payments made in the payment contract
  */
 contract Bonds is ERC1155 {
     
+    //Stores ID-> payment contract relationships
+    mapping(uint256 => address) public IDToContract;
+
+    /// @notice A linked list is used to keep track of staking for each user. This is so we can delete (ustake) nodes in constant time while still being able to itterate easily
+    /// @dev may one day use this in payment standard as well to itterate through loans per person.
     //Data held per person to keep track of staking
     struct IOU{
         bool staking;
@@ -76,79 +27,58 @@ contract Bonds is ERC1155 {
     struct node{
         uint last;
         uint next;
-        IOU value;          //Replace with you own data. Change uint256 where you see it
+        IOU value;
     }
 
     //In the linked list the head is always 0. Head actually represents null. There will never be a value stored there
     uint256 constant public head = 0;
-    //Used to keep track of this info for each user
-    struct llMeta{
-        uint256 tail;
-    }
-    mapping(address => llMeta) public llData;
 
-    //Staking info linked list for each address
+    //Used to keep track of this info for each user's linked list of staking data
+    mapping(address => uint256) public llTail;
+
+    /// @notice this is the staking linked list. Access the node to find the next/last.The 0 node is the HEAD and cannot hold values. If HEAD points to
+    /// itself then it's empty
     mapping(address => mapping(uint256 => node)) public staking;
     
     //Constructor. Empty for now except the metadata url
-    constructor() ERC1155("https://test.com/api/{id}.json"){
-        
-    }
+    constructor() ERC1155("https://test.com/api/{id}.json"){}
     
     /**
     * @notice function creates the tokens for a new loan so they can be sold to generate funding
     * @param _paymentContractAddress is the address of the loan's contract. "Borrower" in this
-    *must be the same as msg.sender
-    * @return uint256 as the id of the ERC1155 token. This is for now, the uint160 representation 
-    *of the payment contract's address. Typecasted to uint256
+    * @param _id is the ID of the loan you;re minting
      */
-    function newLoan(address _paymentContractAddress) external returns(uint256) {
-        paymentContract pc = paymentContract(_paymentContractAddress);
-        require(!pc.issued(),"You have already issued bonds for this loan");
-        require(msg.sender == pc.borrower(), "Only the borrower of this contract can mint the bonds to it");
-        uint256 id = uint256(uint160(_paymentContractAddress));
-        uint256 ammToMint = pc.principal();
-        pc.issueBonds();
-        _mint(msg.sender, id, ammToMint, "");
-        return(id);
+    function newLoan(address _paymentContractAddress, uint256 _id) external{
+        IERC20PaymentStandard pc = IERC20PaymentStandard(_paymentContractAddress);
+        uint256 amm;
+        address creator;
+        (amm, creator) = pc.issueBonds(_id);
+        require(msg.sender == creator, "Only the borrower of this contract can mint the bonds to it");
+        IDToContract[_id] = _paymentContractAddress;
+        _mint(creator, _id, amm, "");
     }
     
-    /**
-    * @notice function stakes an ammount of ERC-1155's with id from sender
-    * @notice you need to approve this contract to spend your ERC-1155's first
-    * @param _id is the token's id. Also the paymentcontract's uint256 representation
-    * @param _amm is the ammount to stake
-     */
-    function stake(uint256 _id, uint256 _amm) external {
-        safeTransferFrom(msg.sender, address(this), _id, _amm, "");
-        _push(IOU(
-            true,
-            _id,
-            _amm,
-            block.timestamp
-        ),msg.sender);
-    }
-    
-    /**
-    * @notice function calculates interest earned over time staking and mints that along with your staking balance
-    * @notice the addInterest function (which only this contract can preform) also updates total ammount due to contract
-    * @return if interest was successfully generated. May not succeed if payment is complete
+    /** 
+    * @notice function unstakes bonds
+    * @param _index is the index in the linked list mentioned above with state varaibles
+    * @return if successful. May not be if loan has been completed since staking
      */
     function unstake(uint256 _index) external returns(bool){
         require(!_isEmpty(msg.sender), "You are not staking any NFTs");
         uint256 id = staking[msg.sender][_index].value.ID; 
         uint256 amm = staking[msg.sender][_index].value.ammount;
         uint256 x = getAccruances(msg.sender,_index);
+        address paymentContract = IDToContract[id];
         //Reset the staking for sender before calling any functions
         
         //Remove staking from the ll
         _del(_index, msg.sender);
         //Call the payment contract before minting or transfering any tokens
-        paymentContract pc = paymentContract(address(uint160(id)));
-        uint256 toMint = x * (amm / pc.interestRateInverse());
+        IERC20PaymentStandard pc = IERC20PaymentStandard(paymentContract);
+        uint256 toMint = x * (amm / pc.getInterest(id));
         bool r;                 //Store return so we can call other contract before mint funciton. Don't want callback attacks
         //Update the balance with new interest. Store return value based on response.
-        if(pc.addInterest(toMint)){
+        if(pc.addInterest(toMint, id)){
             r = true;
         }else{
             r = false;
@@ -162,22 +92,56 @@ contract Bonds is ERC1155 {
     /**
     * @notice function get's how many accruance periods a person has staked through
     * @param _who is who to check
+    * @param _index in the linked list
     * @return the number of periods
      */
     function getAccruances(address _who, uint256 _index) public view returns(uint256) {
         IOU memory iou = staking[_who][_index].value;
         require(iou.staking,"You are not staking any NFTs");
-        uint256 accrualPeriod = paymentContract(address(uint160(iou.ID))).accrualPeriod();
+        address paymentContract = IDToContract[iou.ID];
+        IERC20PaymentStandard pc = IERC20PaymentStandard(paymentContract);
+        uint256 accrualPeriod = pc.getInterest(iou.ID);
         return((block.timestamp - iou.timeStaked)/accrualPeriod);
     }
     
-    //Functions to receive ERC1155. Since I can't make it a ERC1155Holder with dependancy colission
-    function onERC1155Received(address, address, uint256, uint256, bytes memory) public virtual returns (bytes4) {
-        return this.onERC1155Received.selector;
+    /**
+    * @notice the function to hold an ERC1155. Coppied from @Openzeppelin. Only difference is here the function stakes any ERC-1155s sent to it
+     */
+    function onERC1155Received
+        (
+        address _operator,
+        address _from,
+        uint256 _id,
+        uint256 _value,
+        bytes calldata _data
+        ) 
+        public 
+        returns(bytes4)
+        {
+            stake(_id,_value,_from);
+            return this.onERC1155Received.selector;
     }
 
-    function onERC1155BatchReceived(address, address, uint256[] memory, uint256[] memory, bytes memory) public virtual returns (bytes4) {
-        return this.onERC1155BatchReceived.selector;
+    /**
+    * @notice Also a requirement coppied from @openzeppelin. Just handles batch staking
+     */
+    function onERC1155BatchReceived
+        (
+        address _operator, 
+        address _from, 
+        uint256[] memory _ids, 
+        uint256[] memory _values, 
+        bytes memory _data
+        ) 
+        public 
+        virtual 
+        returns (bytes4) 
+            {
+                require(_ids.length == _values.length, "_ids and _values must be the same length");
+                for(uint i = 0; i<_ids.length; i++){
+                    stake(_ids[i],_values[i],_from);
+                }
+            return this.onERC1155BatchReceived.selector;
     }
 
 
@@ -186,35 +150,41 @@ contract Bonds is ERC1155 {
     *BELLOW 
     ==============================================================*/
     
-    /// @notice helper function
-    /// @return if ll is empty
+    /**
+    * @notice helper function
+    * @param _who to lookup the linked list of
+    * @return if ll is empty
+     */
     function _isEmpty(address _who) private view returns(bool){
         return(staking[_who][head].next == 0);   
     }
     
-    event test(uint256);
-    /// @notice push to tail of linkedList
-    /// @param _val is the value to insert at tail
+    /** @notice push to tail of linkedList
+    * @param _val is the value to insert at tail
+    * @param _who is who to push in ll mapping
+     */
     function _push(IOU memory _val, address _who) private{
-        uint256 tail = llData[_who].tail;
+        uint256 tail = llTail[_who];
         if(_isEmpty(_who)){
             staking[_who][head].next = 1;
             staking[_who][1] = node(0,0,_val);
-            llData[_who].tail = 1;
+            llTail[_who] = 1;
         }else{
             staking[_who][tail].next = tail+1;
             staking[_who][tail+1] = node(tail,0,_val);
-            llData[_who].tail++;
+            llTail[_who]++;
         }
     }
     
-    /// @notice delete at a given index
-    /// @param _index is the pointer to the node
+    /** @notice delete at a given index
+    * @param _index is the pointer to the node
+    * @param _who is who in ll mapping
+     */
     function _del(uint256 _index, address _who) private{
-        uint256 tail = llData[_who].tail;
+        uint256 tail = llTail[_who];
         require(_index != head,"cannot delete the head");
         if(_index == tail){
-            llData[_who].tail = staking[_who][tail].last;
+            llTail[_who] = staking[_who][tail].last;
         }
         uint256 a = staking[_who][_index].last;
         uint256 b = staking[_who][_index].next;
@@ -231,4 +201,19 @@ contract Bonds is ERC1155 {
         staking[msg.sender][_index].last = 0;
         
     }
+    /**
+    * @notice function stakes an ammount of ERC-1155's with id from sender
+    * @param _id is the token's id
+    * @param _amm is the ammount to stake
+    * @param _who is who to stake
+     */
+    function stake(uint256 _id, uint256 _amm, address _who) private {
+        _push(IOU(
+            true,
+            _id,
+            _amm,
+            block.timestamp
+        ),_who);
+    }
 }
+

@@ -7,15 +7,18 @@ const BN = require('bn.js');
 
 //Contracts
 const Bonds = artifacts.require("Bonds");
-const SimpleEthPayment = artifacts.require("SimpleEthPayment");
+const Payment = artifacts.require("ERC20CollateralPayment");
+const MockDai = artifacts.require("MockDai");
 
 //Function test values
+const DAI_suppy = tokens('10000');
 const min_payment = tokens('20');
 const paymentPeriod = 12000;            //Seconds. Not miliseconds
 const principalNum = 50;
 const principal = tokens(principalNum.toString());
 const interestRate = 0.12;              //Will be converted to inverse
 const accrualPeriod = 10;              //Seconds. Not miliseconds
+const staking = true;                  //if true then wait the time for staking to test it
 //Helper functions
 function tokens(n){
     return web3.utils.toWei(n,"ether");
@@ -25,22 +28,18 @@ function wait(time){
     return new Promise(resolve => setTimeout(resolve, time));
 }
 
-let bonds, simpleEthPayment;
+let bonds, payment, mockDai;
 let bondIDs = [];
 //Bonds contract tests
 contract(Bonds, async([dev,borrower1,lender1, lender2, hacker]) => {
 
     before(async()=>{
         bonds = await Bonds.new({from:dev});
-        simpleEthPayment = await SimpleEthPayment.new(
+        payment = await Payment.new(
             bonds.address,
-            min_payment,
-            paymentPeriod,
-            principal,
-            Math.floor(100/(interestRate*100)),               //No decimal inverse of interest rate
-            accrualPeriod,
-            {from: borrower1}
+            {from: dev}
         );
+        mockDai = await MockDai.new(DAI_suppy,{from:dev});
     });
 
     describe('Bonds Deployment', async() => {
@@ -50,24 +49,62 @@ contract(Bonds, async([dev,borrower1,lender1, lender2, hacker]) => {
         });
     });
 
+    describe('Mock Dai Deployment', async() => {
+        it('Gave devFee', async() =>{
+            const bal = await mockDai.balanceOf(dev);
+            assert.equal(DAI_suppy, bal);
+        });
+
+        it('Dev sends 100 to each lender', async() =>{
+
+            await mockDai.transfer(lender1,tokens('100'),{from:dev});
+            await mockDai.transfer(lender2,tokens('100'),{from:dev});
+        });
+
+        it('Also dev sends 1000 to borrower so he can pay interest and collateral', async() =>{
+            await mockDai.transfer(borrower1, tokens('1000',{from:dev}));
+        });
+    });
+    
+
     describe('Payment Contract Deployment', async() =>{
-        it('Recorded borrower correctly', async()=>{
-            const borrower = await simpleEthPayment.borrower();
-            assert.equal(borrower1,borrower);
+        it('Recorded bond contract correctly', async()=>{
+            const bondAddress = await payment.bondContract();
+            assert.equal(bonds.address,bondAddress);
         });
-
-        it('Recorded bonds contract correctly', async()=>{
-            const contract = await simpleEthPayment.bondContract();
-            assert.equal(bonds.address,contract); 
-        });
-
         //Could test for each state variable here. But I'm not doing that. If the two above work the others likely do too
     });
 
+    describe('Loan configuration', async() => {
+        it('configure loan', async()=>{
+            await payment.configureNew(
+                mockDai.address,
+                min_payment,
+                paymentPeriod,
+                principal,
+                Math.floor(100 / (interestRate * 100)),
+                accrualPeriod,
+                {from: borrower1}
+                );
+            bondIDs[0] = await payment.loanIDs(borrower1, 0);
+            assert(bondIDs[0]);
+        });
+    });
+
+    describe('Collateral', async() => {
+        it('borrower adds 100 DAI tokens of collateral', async()=>{
+            await mockDai.approve(payment.address, tokens('100'), {from:borrower1});
+            await payment.addCollateral(mockDai.address, tokens('100'), bondIDs[0],{from: borrower1});
+            const col = await payment.collateralLookup(bondIDs[0]);
+            assert.equal(col["ammount"], tokens('100'));
+        });
+    })
+    
+    
     describe('Bond creation', async() => {
         it('Hacker fails to create bonds for himself', async()=>{
             try {
-                await bonds.newLoan(simpleEthPayment.address,{from:hacker});
+                await bonds.newLoan(payment.address,bondIDs[0],{from:hacker});
                 assert.fail();
             } catch (error) {
                 assert.exists(error);
@@ -76,11 +113,10 @@ contract(Bonds, async([dev,borrower1,lender1, lender2, hacker]) => {
         });
 
         it('Borrower creates bonds for himself with quantity equal to principal', async()=>{
-            const id = await bonds.newLoan(simpleEthPayment.address,{from:borrower1});
-            bondIDs[0] = id.logs[0].args.id;
-            const bondBalanceExpected = await simpleEthPayment.principal();
+            await bonds.newLoan(payment.address, bondIDs[0], {from:borrower1});
+            const loan = await payment.loanLookup.call(bondIDs[0]);
             const bondBalanceActual = await bonds.balanceOf(borrower1, bondIDs[0]);
-            assert.equal(bondBalanceExpected.toString(), bondBalanceActual.toString());
+            assert.equal(loan["principal"].toString(), bondBalanceActual.toString());
         });
     });
 
@@ -90,14 +126,28 @@ contract(Bonds, async([dev,borrower1,lender1, lender2, hacker]) => {
             await bonds.safeTransferFrom(borrower1, lender1, bondIDs[0], tokens((principalNum/2).toString()), web3.utils.asciiToHex(""),{from:borrower1});
             await bonds.safeTransferFrom(borrower1, lender2, bondIDs[0], tokens((principalNum/2).toString()), web3.utils.asciiToHex(""),{from:borrower1});
         });
+
+        it('Borrower gets a matching ammount of mock Dai from the lenders', async() =>{
+            const borrowerBalBefore = await mockDai.balanceOf(borrower1);
+            await mockDai.transfer(borrower1,tokens((principalNum/2).toString()),{from: lender1});
+            await mockDai.transfer(borrower1,tokens((principalNum/2).toString()),{from: lender2});
+            const borrowerBalAfter = await mockDai.balanceOf(borrower1);
+            assert.equal(principal.toString(), (borrowerBalAfter.sub(borrowerBalBefore)).toString());
+        });
+
     });
 
     describe('Staking', async() => {
+        if(staking){
         it('Lender1 stakes his whole balance of bonds', async()=>{
             const half = tokens((principalNum/2).toString());
-            await bonds.stake(bondIDs[0],half,{from:lender1});
-            const stakingBal = await bonds.staking(lender1);
-            assert.equal(stakingBal.ammount.toString(), half.toString());
+            await bonds.safeTransferFrom(lender1, bonds.address, bondIDs[0], half, web3.utils.asciiToHex(""), {from: lender1});
+            const stakingBal = await bonds.staking(lender1,1);
+            assert.equal(stakingBal["value"]["ammount"], half);
+        });
+
+        it('Check and print accruances', async()=>{
+            const a = await bonds.getAccruances(lender1, 1,{from:dev});
         });
 
         it('Wait for interest acruall seconds', async() => {
@@ -107,64 +157,74 @@ contract(Bonds, async([dev,borrower1,lender1, lender2, hacker]) => {
 
         it('Lender1 unstakes to have his interest', async()=>{
             const prevBal = tokens((principalNum/2).toString());
-            await bonds.unstakeAll({from:lender1});
+            await bonds.unstake(1,{from:lender1});
             const bal = await bonds.balanceOf(lender1, bondIDs[0]);
             let a = new BN(prevBal);
             let b = new BN(bal);
             assert.equal(a.cmp(b), -1);
         });
+    }
+
     });
-    
+
     describe('Payments', async() => {
         it('borrower makes minimum payment', async()=>{
-            await simpleEthPayment.payment({value: min_payment, from: borrower1});
-            const paymentComplete = await simpleEthPayment.paymentComplete();
-            assert.equal(min_payment,paymentComplete);
+            await mockDai.approve(payment.address, min_payment, {from: borrower1});
+            await payment.payment(bondIDs[0], min_payment,{from: borrower1});
+            const loan = await payment.loanLookup.call(bondIDs[0]);
+            assert.equal(min_payment,loan["paymentComplete"]);
         });
 
         it('Hacker cant take the money', async()=>{
             try {
-                await bonds.setApprovalForAll(simpleEthPayment.address,true);
-                await simpleEthPayment.collect(min_payment,{hacker});
+                await bonds.safeTransferFrom(hacker,payment.address,bondIDs[0],tokens('100'), web3.utils.asciiToHex(""),{from: hacker});
                 assert.fail();
             } catch (error) {
                 assert.exists(error);
-            }finally{
-                await bonds.setApprovalForAll(simpleEthPayment.address,false);
             }
         });
-
+        
+        //is ok to fail for now
         it('Lender1 takes payment', async()=>{
-            const balBefore = await web3.eth.getBalance(lender1);
-            await bonds.setApprovalForAll(simpleEthPayment.address,true,{from:lender1});
-            await simpleEthPayment.collect(min_payment,{from:lender1});
-            await bonds.setApprovalForAll(simpleEthPayment.address,false,{from:lender1});
-            const balAfter = await web3.eth.getBalance(lender1);
-            assert.equal(new BN(balBefore).cmp(new BN (balAfter)), -1);
+            let balBefore = await mockDai.balanceOf(lender1);
+            await bonds.safeTransferFrom(lender1, payment.address, bondIDs[0],min_payment, web3.utils.asciiToHex(""), {from:lender1});
+            let balAfter = await mockDai.balanceOf(lender1);
+            balBefore = new BN(balBefore);
+            balAfter = new BN(balAfter);
+            assert.equal((balBefore.add(new BN(min_payment))).toString(), balAfter.toString());
         });
 
         it('Borrower finishes payment', async()=>{
-            const total = await simpleEthPayment.totalPaymentsValue();
-            const complete = await simpleEthPayment.paymentComplete();
+            const obj = await payment.loanLookup.call(bondIDs[0]);
+            const total = obj["totalPaymentsValue"];
+            const complete = await obj["paymentComplete"];
             const toPay = total.sub(complete);
-            await simpleEthPayment.payment({value: toPay, from: borrower1});
-            const isComplete = await simpleEthPayment.isComplete();
+            await mockDai.approve(payment.address, toPay, {from: borrower1});
+            await payment.payment(bondIDs[0],toPay,{from: borrower1});
+            const isComplete = await payment.isComplete(bondIDs[0]);
             assert(isComplete);
         });
 
         it('Lender2 collects the rest', async()=>{    
-            await bonds.setApprovalForAll(simpleEthPayment.address,true,{from:lender2});
+            
             const nftbal = await bonds.balanceOf(lender2,bondIDs[0]);
-            const ethbalpre = await web3.eth.getBalance(lender2);
-            console.log(typeof(ethbalpre));
-            await simpleEthPayment.collect(nftbal,{from:lender2});
-            await bonds.setApprovalForAll(simpleEthPayment.address,false,{from:lender2});
-            const bal = await web3.eth.getBalance(lender2);
+            const daibalpre = await mockDai.balanceOf(lender2);
+            await bonds.safeTransferFrom(lender2,payment.address,bondIDs[0],nftbal, web3.utils.asciiToHex(""), {from:lender2});
+            const bal = await mockDai.balanceOf(lender2);
             //Is 1 when second value is larger. It should be slightly because gas fees
-            assert.equal((nftbal.add(new BN(ethbalpre))).cmp(new BN(bal.toString())), 1 );
+            assert.equal((bal.sub(daibalpre)).toString(), nftbal.toString());
         });
     });
-    
-    
 
+    describe('Wrapping up', async() => {
+        it('Borrower collects 100 DAI collateral back', async()=>{
+            const balBefore = await mockDai.balanceOf(borrower1);
+            await payment.returnCollateral(bondIDs[0],{from:borrower1});
+            const balAfter = await mockDai.balanceOf(borrower1);
+            assert.equal(balBefore.toString(),balAfter.sub(new BN(tokens('100'))).toString());
+        })
+    })
+    
+    
+    
 })
