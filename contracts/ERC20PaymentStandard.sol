@@ -100,7 +100,7 @@ contract ERC20PaymentStandard is ERC1155Holder{
 
     /**
     * @notice get the interest rate of a loan. Makes it easy for other contract since it doens't have to use parse struct
-    * @param _id
+    * @param _id is the loan ID
     * @return inverse interest rate
      */
     function getInterest(uint256 _id) external virtual view returns(uint256){
@@ -182,8 +182,8 @@ contract ERC20PaymentStandard is ERC1155Holder{
         loanLookup[_id].paymentComplete += _erc20Ammount;                                //Increase paymentComplete
     }
     
-    /**
-     * @notice handles payment collection automatically when ERC1155s are sent. Function overriden from OpenZeppelin ERC1155Holder.sol
+    /*
+     * handles payment collection automatically when ERC1155s are sent. Function overriden from OpenZeppelin ERC1155Holder.sol
      */
     function onERC1155Received(address _operator, address _from, uint256 _id, uint256 _value, bytes calldata _data) public virtual override returns(bytes4){
         require(loanLookup[_id].issued, "this loan has not been issued yet. How do you even have bonds for it???");
