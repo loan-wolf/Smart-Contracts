@@ -92,10 +92,11 @@ This returns teh interestRateInverse for a loan. For Bonds.sol to use so it does
 `isDelinquent(uint256) external view returns(bool);`
 Returns true if the loan is delinquent. Can be overridden to return based off any kind of terms. But for now that term is "if minPayment is not made by paymentDueDate"
 
-`configureNew(address, uint256, uint256, uint256, uint256, uint256)external;`
-For now only borrower can call this. This is how a borrower configures a loan with all the details of payment before minting bonds. These are the following:
+`configureNew(address, address, uint256, uint256, uint256, uint256, uint256)external;`
+This function configures a new loan for a given borrower. ANYONE can configure a loan for anyone else. But only the borrower can mint the ERC-1155s and thus begin the loan. A lender can call this function with a borrowers name to give a sort of "loan request" the borrower can choose to accept by minting the ERC-1155s for it. The parameters are listed bellow:
 
-param _erc20 is the ERC20 contract address that will be used for payments
+- `_erc20` is the ERC20 contract address that will be used for payments
+- `_borrower` is the borrower this loan is being configured for
 - `_minPayment` is the minimum payment that must be made before the payment period ends
 - `_paymentPeriod` payment must be made by this time or delinquent function will return true
 - `_principal` the origional loan value before interest
