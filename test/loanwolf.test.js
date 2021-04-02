@@ -76,9 +76,10 @@ contract(Bonds, async([dev,borrower1,lender1, lender2, hacker]) => {
     });
 
     describe('Loan configuration', async() => {
-        it('configure loan', async()=>{
+        it('configure loan for borrower1. From borrower1', async()=>{
             await payment.configureNew(
                 mockDai.address,
+                borrower1,
                 min_payment,
                 paymentPeriod,
                 principal,

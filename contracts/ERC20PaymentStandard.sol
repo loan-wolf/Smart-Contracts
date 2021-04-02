@@ -120,6 +120,7 @@ contract ERC20PaymentStandard is ERC1155Holder{
     * @notice contract must be configured before bonds are issued. Pushes new loan to array for user
     * @dev borrower is msg.sender for testing. In production might want to make this a param
     * @param _erc20 is the ERC20 contract address that will be used for payments
+    * @param _borrower is the borrower loan is being configured for. Keep in mind. ONLY this borrower can mint bonds to start the loan
     * @param _minPayment is the minimum payment that must be made before the payment period ends
     * @param _paymentPeriod payment must be made by this time or delinquent function will return true
     * @param _principal the origional loan value before interest
@@ -128,6 +129,7 @@ contract ERC20PaymentStandard is ERC1155Holder{
      */
     function configureNew(
     address _erc20,
+    address _borrower,
     uint256 _minPayment, 
     uint256 _paymentPeriod, 
     uint256 _principal, 
@@ -136,11 +138,12 @@ contract ERC20PaymentStandard is ERC1155Holder{
     )
     external
     virtual
+    returns(uint256)
     {
         //Create new ID for the loan
-        uint256 id = getId(msg.sender, loanIDs[msg.sender].length);
+        uint256 id = getId(_borrower, loanIDs[_borrower].length);
         //Push to loan IDs
-        loanIDs[msg.sender].push(id);
+        loanIDs[_borrower].push(id);
         //Add loan info to lookup
         loanLookup[id] = loan(
         {
@@ -158,6 +161,7 @@ contract ERC20PaymentStandard is ERC1155Holder{
             paymentComplete: 0
             }
         );
+        return id;
     }
     
     /**
