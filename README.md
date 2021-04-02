@@ -2,48 +2,38 @@ LoanWolf Smart Contracts
 ========================
 
 (for the Chainlink2021 Hackathon)
-Imports are available both for Remix and local developement with the Openzeppelin npm package.
-These are the v1 contracts which only support single users of payment contracts. V2 will support multiple users for 
-each payment contract.  
-On Remix increase gas limit for Bonds.sol.
 
-Bonds.sol v2
+These are the V2 contracts for loanwolf decentralized non-colateralized lending. Unlike V1, the ERC20 payment contract standard here exists as an overridable template for issuing loans with payment in ERC20 tokens. There are 3 important contracts here. Bonds.sol, ERC20PaymentStandard.sol and ERC20CollateralStandard.sol. The depreciated SimpleEthPayment.sol is there as well. There is also a mock dai contract meant for testing as an erc20 token. There is no functionality, it only exists for testing. Truffle tets are in the tests folder. Migrations are not complete so don't just copy those over. Bellow are the descriptions of the functions for the relevant contracts.
+
+Bonds.sol (v2)
+==============
+
+Introduction
 ------------
-
 Bonds is an ERC-1155 token. And it inherits the code from [OpenZeppelin](https://docs.openzeppelin.com/contracts/3.x/api/token/erc1155)
-Bonds are minted by borrowers with the ID as a interger representation of it's payment contract address. 
-The payment contract is necessary to make a loan as it handles the details of payment, collection, interest and failure.
+Bonds are minted by borrowers. These bonds are ERC-1155s that can then be staked (to accrue interest).  
 
+Functions
+---------
 `Constructor:`  
-No params for contructor. However, the metadata URL required by ERC-1155 is hardcoded in the constructor
+No params for contructor. However, the metadata URL required by ERC-1155 is hardcoded in the constructor. This should be changed.
 
-The following functions are unique to Bonds and callable externally:
-
-`newLoan(address _paymentContractAddress) external returns(uint256)`  
+`newLoan(address _paymentContractAddress, uint256 _id) external`  
 newLoan will mint new bond ERC-1155s to the borrower as defined in a paymentContract who's address is passed as a parameter.
-- the caller of the newLoan function must be the borrower defined in the payment contract.
-- the payment contract must be "complete". Meaning there is no current loan outstanding on the contract
-- the function returns a uint256 representation of the payment contract's address which is also the ERC-1155's ID
-
-`stake(uint256 _id, uint256 _amm) external`  
-Stake deposits a lenders ERC-1155's in order to earn interest in accordance to the interest defined in the token's payment contract.
-In the future I'd like to depreciate this in favor of having this automatically handled with ERC-1155's sent to the contract.  
-- CAN now stake multiple times. New entries are added to a circular doubly linked list and can be accessed throug the staking mapping
-- Must use the setApprovalAll function to allow Bonds to send your ERC-1155's before calling
-- _id is the ID of the ERC-1155
-- _amm is the ammount to sent. This cannot be more than your balance.
-Staking mechanics will be explained more in the unstake function's description
+- the function calls the `issueBonds()` function of the payment contract with the ID and collects the returned address.
+- that address must match the function caller (should be the borrower of the loan)
+- the id is also saved in a mapping called idToContract to connec the id to the payment contract address.
 
 `unstake(uint256 _index) external returns(bool)`  
-unstake sends staked ERC-1155s back to their owner. The _index parameter is the pointer to the place in the linked list where this staking is done. More on that bellow. The function also mints new ERC-1155s (of the same ID) as interest. When tokens are first staked the timestamp is noted. The difference between the unstake time and the stake time is then taken and divided by the "acruall period" from the payment contract. This is then multiplied by the ammount staked divided by the inverse interest rate. The result is a non-compounding simple interest. Walking through an example the staking process might look like this:  
+unstake sends staked ERC-1155s back to their owner. The _index parameter is the pointer to the place in the linked list where this staking is done. The function also mints new ERC-1155s (of the same ID) as interest. When tokens are first staked the timestamp is noted. The difference between the unstake time and the stake time is then taken and divided by the "acruall period" from the payment contract. This is then multiplied by the ammount staked divided by the inverse interest rate. The result is a non-compounding simple interest. Walking through an example the staking process might look like this:  
 1. Bob stakes 100 ERC-1155s which have an acruall period of 1 month and an inverse interest rate of 50 (2% monthly interest)
 2. 3 months pass
 3. Bob unstakes his ERC-1155s. And is given 106 back. As 3 Months * (100/50) = 6. That 6 is minted back along with his origionall 100.  
-NOTE: tokens are MINTED back not transfered back. There was a strange issue with a contract not being approved to spend ERC-1155s that were in it's possesion. Would like to fix this in V2. But it's a non breaking issue for now.  
+NOTE: tokens are MINTED back not transfered back. There was a strange issue with a contract not being approved to spend ERC-1155s that were in it's possesion. Would like to fix this. But it's a non breaking issue for now.  
   
 A final note is the return value of unstakeAll(). This returns true if interest generation is successful. In a particular case it will not be. And that is when a paymentContract is marked as complete. Meaning a borrower has completed the "total payment due" as defined in the payment contract. If a contract is complete a staker will be returned a false flag and be only sent back his principal investment, no interest.
 
-`getAccruances(address _who) public view returns(uint256)`  
+`getAccruances(address _who, uint256 _index) public view returns(uint256) `  
 This function returns the number of passed accruance periods for a staker _who. Using the example of Bob above, if bob called this function just before unstaking he would have been returned 3 as 3 months passed and 1 month was the accruance period.
 -NOTE: _who must be currently staking to call the function
 
@@ -57,72 +47,69 @@ The `staking` mapping is a nested mapping containing a circular doubly linked li
 
 The `unstake()` function makes use of the index in this linked list for deletions in constant time with low gas fees. Yaaaaaayyyy! When traversing the linked list and displaying to a user make sure to keep track of the "index" of each entry in the list. As if a user decides to unstake you will need to pass that index into the `unstake()` funciton.
 
-paymentContract interface in Bonds.sol
---------------------------------------
-If you are interest in creating your own payment contract. Understand it must include the following functions in order to be compatable with Bonds.sol:  
-The following are get functions (auto generated by Solidity Compilers) for public state variables. Just have these state variables in the contract  
-`principal() external view returns(uint256);`  
-`accrualPeriod() external view returns(uint256);`  
-`interestRateInverse() external view returns(uint256);`  
-`borrower() external view returns(address);` 
-`issued() external view returns(bool);`   
-The following are real functions that must do certain things:  
-`addInterest(uint256 _amm) external returns(bool);`  
-Function must update the payment contract with new interest generated and return true if successful.  
-`isComplete() external returns(bool);`  
-must return true if the loan is paid off or bonds are not issued.
-`issueBonds() external;`  
-must flag the "issued" variable above as true to show bonds have been minted for the loan.  
+ERC20PaymentStandard.sol
+========================
 
-SimpleEthPayment.sol v1
------------------------
+Introduction
+------------
+The payment contract of a loan can be custom made and it's encouraged to be. But they all should be based off the ERC20PaymentStandard. That's not to say payment contracts must be ERC20 payment contracts but they must have functions like this so bonds can call them and interact with features of the contract. All the functions in this contract are virual so they can be overridden by any child contract. An example of a child contract will be bellow with the ERC20CollateralPayment contract.
 
-Example of a payment contract. Each loan in this system needs it's own payment contract that specifies (and enforces) the details of the loan. Please note that this v1 implementation is lacking in a lot of functionality. These are aimed to be solved in v2, the biggest of which is that a payment contract like SimpleEthPayment must be deployed for (and before) each loan is started by calling `newLoan()` in Bonds.sol. Also, the public state variables of the contract must be configured in the constructor and cannot be changed after deployment. However, these payment contracts can be created by anyone using LoanWolf and loan payments are by no means limited to the contracts developed durring this hackathon. Any contract that implements the interface functions above can be used with the protocol.  
+Loans/Lookups
+-------------
 
-Public State Variables:
-`bool public issued;`  
-`address public bondContract;`  
-`address public borrower;`  
-`uint256 public paymentPeriod;`  
-`uint256 public paymentDueDate;`  
-`uint256 public minPayment;`  
-`uint256 public interestRateInverse;`  
-`uint256 public accrualPeriod;`  
-`uint256 public principal;`  
-`uint256 public totalPaymentsValue;`  
-This starts as principal but increased with interest added
-`uint256 public awaitingCollection;`  
-`uint256 public paymentComplete;`  
+The contract holds 2 mappings. loanIDs and loanLookup. loanIDs maps each address to an array of loan IDs. The loanLookup returns a loan struct in response to a loanID. This is what a loan looks like:
+- `bool issued;`
+- `address ERC20Address;`
+- `address borrower;`
+- `uint256 paymentPeriod;`
+- `uint256 paymentDueDate;`
+- `uint256 minPayment;`
+- `uint256 interestRateInverse;`
+- `uint256 accrualPeriod;`
+- `uint256 principal;`
+- `uint256 totalPaymentsValue;`
+- `uint256 awaitingCollection;`
+- `uint256 paymentComplete;`
 
-The constructor takes the following as parameters to configure the contract  
-`_bondContract` is the bond contract address  
-`_minPayment` is the minimum payment that must be made before the payment period ends  
-`_paymentPeriod` payment must be made by this time or delinquent function will return true  
-`_principal` the origional loan value before interest  
-`_inverseInterestRate` the interest rate expressed as inverse. 2% = 1/5 = inverse of 5  
-`_accrualPeriod` the time it takes for interest to accrue in seconds  
+Functions (also this is the interface used by bonds.sol)
+--------------------------------------------------------
 
-The following functions are implemented:
-`payment() payable external incomplete`  
-send a payment to this function in eth and it will reset the paymentDueDate as current time plus the payment period.
-- contract must be incomplete, meaning in progress
-- payment must also meet the minimum payment defined but there's an exception for the last payment which may be less than the minimum payment  
+`Constructor(address _bonds)`
+The bonds contract address should go here
 
-`collect(uint256 _amm) external`  
-Send matching ERC-1155s from Bonds from a bond owner to the contract and return an equal ammount of eth.
-- must approve simpleEthPayment in bonds first with `setApprovalForAll()`
-- _amm must not be more than the awaiting collection ammount
-- collector must have at least _amm ERC-1155s with the ID matching the simpleEthPayment contract's address  
+`getNumberOfLoans(address) external view returns(uint256)`
+Simple enough. This returns the length of the loanIds array for address
 
-`isDelinquent() external view returns(bool)`  
-Returns true if the current time surpasses the payment due date  
-Reminder that this date updates upon payments  
+`issueBonds(uint256) external returns(uint256,address);`
+This function is called when new bond NFTs are minted. It should verify that the ID is not already issued and return the borrower address for confirmation that borrower is calling the function.
 
-`addInterest(uint256 _amm) onlyBonds external returns(bool)`  
-This function may only be called by the Bonds contract. It updates the total ammount due to reflect interest collected by stakers  
+`addInterest(uint256, uint256) external returns(bool);`
+This updates the `totalPaymentsValue` variable with new interest. Is called when a lender unstakes their loans in Bonds.sol
 
-`isComplete() public view returns(bool)`  
-Returns true if the payment complete and total payment value is equal. Meaning loan is paid off or bonds are not yet issued.
+`getInterest(uint256) external view returns(uint256);`
+This returns teh interestRateInverse for a loan. For Bonds.sol to use so it doesn't have to parse a struct
+
+`isDelinquent(uint256) external view returns(bool);`
+Returns true if the loan is delinquent. Can be overridden to return based off any kind of terms. But for now that term is "if minPayment is not made by paymentDueDate"
+
+`configureNew(address, uint256, uint256, uint256, uint256, uint256)external;`
+For now only borrower can call this. This is how a borrower configures a loan with all the details of payment before minting bonds. These are the following:
+
+param _erc20 is the ERC20 contract address that will be used for payments
+- `_minPayment` is the minimum payment that must be made before the payment period ends
+- `_paymentPeriod` payment must be made by this time or delinquent function will return true
+- `_principal` the origional loan value before interest
+- `_inverseInterestRate` the interest rate expressed as inverse. 2% = 1/5 = inverse of 5
+- `_accrualPeriod` the time it takes for interest to accrue in seconds
+
+`payment(uint256, uint256) external;`
+This is the function that borrower calls to make their payments. IMPORTANT: You must approve the transfer with the designated ERC20 contract first.
+
+`isComplete(uint256) external view returns(bool);`
+Returns true if a loanID reflects a complete and paid off loan
+
+`getId(address, uint256) external view;`
+This function creates an ID for a loan. This is the hash of the address of a borrower, address of this address, and the index in the loanIDs array
 
 Truffle Tests
 -------------
