@@ -52,7 +52,7 @@ ERC20PaymentStandard.sol
 
 Introduction
 ------------
-The payment contract of a loan can be custom made and it's encouraged to be. But they all should be based off the ERC20PaymentStandard. That's not to say payment contracts must be ERC20 payment contracts but they must have functions like this so bonds can call them and interact with features of the contract. All the functions in this contract are virual so they can be overridden by any child contract. An example of a child contract will be bellow with the ERC20CollateralPayment contract.
+The payment contract of a loan can be custom made and it's encouraged to be. But they all should be based off the ERC20PaymentStandard. That's not to say payment contracts must be ERC20 payment contracts but they must have functions like this so bonds can call them and interact with features of the contract. All the functions in this contract are virual so they can be overridden by any child contract. An example of a child contract will be bellow with the ERC20CollateralPayment contract. NOTE: onERC1155BatchReceived is not implemented. Only single ERC1155 transfers handle payment withdrawl.
 
 Loans/Lookups
 -------------
@@ -111,6 +111,16 @@ Returns true if a loanID reflects a complete and paid off loan
 
 `getId(address, uint256) external view;`
 This function creates an ID for a loan. This is the hash of the address of a borrower, address of this address, and the index in the loanIDs array
+
+ERC20CollateralStandard.sol
+===========================
+This contract is an example of a custom implementation of the ERC20PaymentStandard. This child contract inherits everything from it's parent but adds the ability to post ERC20 collateral to a loan. It adds a collateralLookup mapping to store the ERC20 contract address and the ammount as collateral. It also overrides the ERC-1155 recieve function to handle collateral withdrawl if a loan is marked delinquent. If the loan is completed the borrower can withdrawl. NOTE: onERC1155BatchReceived is not implemented. Only single ERC1155 transfers handle collaterall colleciton. The new functions added are as follows:  
+
+`addCollateral(address _ERC20Contract, uint256 _ammount, uint256 _loanId) external`
+Only borrower can call this and add collateral at any point but can only add collateral once. The ERC20 contract here does not have to be the same as the one in payment and can instead be anything.
+
+`returnCollateral(uint256 _loanId) external`
+Function returns the collateral to the borrower if the loan is completed and borrower is calling.
 
 Truffle Tests
 -------------

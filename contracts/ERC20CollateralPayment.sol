@@ -31,6 +31,7 @@ contract ERC20CollateralPayment is ERC20PaymentStandard{
      */
     function addCollateral(address _ERC20Contract, uint256 _ammount, uint256 _loanId) external{
         require(loanLookup[_loanId].borrower == msg.sender, "only the borrower can add collateral");
+        require(collateralLookup[_loanId].ammount == 0, "Can only add collateral once");
         IERC20 erc20 = IERC20(_ERC20Contract);
         collateralLookup[_loanId] = collateral(_ERC20Contract, _ammount);
         erc20.transferFrom(msg.sender, address(this), _ammount);
@@ -47,8 +48,8 @@ contract ERC20CollateralPayment is ERC20PaymentStandard{
         erc20.transfer(msg.sender, collateralLookup[_loanId].ammount);
     }
 
-    /**
-     * @notice handles payment collection automatically when ERC1155s are sent. Overriden from ERC20PaymentStandard.sol
+    /*
+     * handles payment collection automatically when ERC1155s are sent. Overriden from ERC20PaymentStandard.sol
      */
     function onERC1155Received(address _operator, address _from, uint256 _id, uint256 _value, bytes calldata _data) public override returns(bytes4){
         require(loanLookup[_id].issued, "this loan has not been issued yet. How do you even have bonds for it???");
