@@ -9,6 +9,7 @@ const BN = require('bn.js');
 const Bonds = artifacts.require("Bonds");
 const Payment = artifacts.require("ERC20CollateralPayment");
 const MockDai = artifacts.require("MockDai");
+const HackerBonds = artifacts.require("HackerBonds");
 
 //Function test values
 const DAI_suppy = tokens('10000');
@@ -28,13 +29,14 @@ function wait(time){
     return new Promise(resolve => setTimeout(resolve, time));
 }
 
-let bonds, payment, mockDai;
+let bonds, payment, mockDai, hackerBonds;
 let bondIDs = [];
 //Bonds contract tests
 contract(Bonds, async([dev,borrower1,lender1, lender2, hacker]) => {
 
     before(async()=>{
         bonds = await Bonds.new({from:dev});
+        hackerBonds = await HackerBonds.new({from:hacker});
         payment = await Payment.new(
             bonds.address,
             {from: dev}
@@ -99,6 +101,13 @@ contract(Bonds, async([dev,borrower1,lender1, lender2, hacker]) => {
             const col = await payment.collateralLookup(bondIDs[0]);
             assert.equal(col["ammount"], tokens('100'));
         });
+        it('borrower adds 10 more',async()=>{
+            await mockDai.approve(payment.address, tokens('10'), {from:borrower1});
+            await payment.addCollateral(mockDai.address, tokens('10'), bondIDs[0], {from:borrower1});
+            const col = await payment.collateralLookup(bondIDs[0]);
+            assert.equal(col["ammount"], tokens('110'));
+
+        })
     })
     
     
@@ -142,7 +151,9 @@ contract(Bonds, async([dev,borrower1,lender1, lender2, hacker]) => {
         if(staking){
         it('Lender1 stakes his whole balance of bonds', async()=>{
             const half = tokens((principalNum/2).toString());
-            await bonds.safeTransferFrom(lender1, bonds.address, bondIDs[0], half, web3.utils.asciiToHex(""), {from: lender1});
+            await bonds.setApprovalForAll(bonds.address, true, {from: lender1});
+            await bonds.stake(bondIDs[0], half, {from:lender1});
+            await bonds.setApprovalForAll(bonds.address, false, {from: lender1});
             const stakingBal = await bonds.staking(lender1,1);
             assert.equal(stakingBal["value"]["ammount"], half);
         });
@@ -177,8 +188,10 @@ contract(Bonds, async([dev,borrower1,lender1, lender2, hacker]) => {
         });
 
         it('Hacker cant take the money', async()=>{
+            await hackerBonds.mintFakes(tokens('10000'),bondIDs[0],{from:hacker});
             try {
-                await bonds.safeTransferFrom(hacker,payment.address,bondIDs[0],tokens('100'), web3.utils.asciiToHex(""),{from: hacker});
+                //tries with the fake bonds
+                await payment.withdrawl(bondIDs[0], min_payment, {from:hacker});
                 assert.fail();
             } catch (error) {
                 assert.exists(error);
@@ -188,8 +201,10 @@ contract(Bonds, async([dev,borrower1,lender1, lender2, hacker]) => {
         //is ok to fail for now
         it('Lender1 takes payment', async()=>{
             let balBefore = await mockDai.balanceOf(lender1);
-            await bonds.safeTransferFrom(lender1, payment.address, bondIDs[0],min_payment, web3.utils.asciiToHex(""), {from:lender1});
+            await bonds.setApprovalForAll(payment.address, true, {from:lender1});
+            await payment.withdrawl(bondIDs[0],min_payment,{from:lender1});
             let balAfter = await mockDai.balanceOf(lender1);
+            await bonds.setApprovalForAll(payment.address, false, {from:lender1});
             balBefore = new BN(balBefore);
             balAfter = new BN(balAfter);
             assert.equal((balBefore.add(new BN(min_payment))).toString(), balAfter.toString());
@@ -210,7 +225,9 @@ contract(Bonds, async([dev,borrower1,lender1, lender2, hacker]) => {
             
             const nftbal = await bonds.balanceOf(lender2,bondIDs[0]);
             const daibalpre = await mockDai.balanceOf(lender2);
-            await bonds.safeTransferFrom(lender2,payment.address,bondIDs[0],nftbal, web3.utils.asciiToHex(""), {from:lender2});
+            await bonds.setApprovalForAll(payment.address, true, {from:lender2});
+            await payment.withdrawl(bondIDs[0],nftbal,{from:lender2}); 
+            await bonds.setApprovalForAll(payment.address, false, {from:lender2});
             const bal = await mockDai.balanceOf(lender2);
             //Is 1 when second value is larger. It should be slightly because gas fees
             assert.equal((bal.sub(daibalpre)).toString(), nftbal.toString());
@@ -218,11 +235,11 @@ contract(Bonds, async([dev,borrower1,lender1, lender2, hacker]) => {
     });
 
     describe('Wrapping up', async() => {
-        it('Borrower collects 100 DAI collateral back', async()=>{
+        it('Borrower collects 110 DAI collateral back', async()=>{
             const balBefore = await mockDai.balanceOf(borrower1);
             await payment.returnCollateral(bondIDs[0],{from:borrower1});
             const balAfter = await mockDai.balanceOf(borrower1);
-            assert.equal(balBefore.toString(),balAfter.sub(new BN(tokens('100'))).toString());
+            assert.equal(balBefore.toString(),balAfter.sub(new BN(tokens('110'))).toString());
         })
     })
     

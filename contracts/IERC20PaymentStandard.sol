@@ -25,4 +25,6 @@ interface IERC20PaymentStandard{
     function isComplete(uint256) external view returns(bool);
 
     function getId(address, uint256) external view;
+
+    function withdrawl(uint256, uint256) external;
 }

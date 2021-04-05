@@ -37,6 +37,9 @@ A final note is the return value of unstakeAll(). This returns true if interest 
 This function returns the number of passed accruance periods for a staker _who. Using the example of Bob above, if bob called this function just before unstaking he would have been returned 3 as 3 months passed and 1 month was the accruance period.
 -NOTE: _who must be currently staking to call the function
 
+`stake(uint256 _id, uint256 _amm) external`
+This function sends your ERC1155s to the Bonds contract to stake. MUST approve bonds to spend your bonds before calling. It will add the staking to the linked list detailed bellow.  
+
 Staking (Linked List)
 ---------------------
 The `staking` mapping is a nested mapping containing a circular doubly linked list data structure that holds an address's staking info. Traversal of the linked list is to be done with the public mapping offchain. To traverse start at the HEAD (will always be 0) for a given user's address. Then look up the NEXT value for that user. Continue until you loop back to HEAD (0). Values are stored under the IOU struct named `value`. The IOU struct has the following values within it:  
@@ -52,7 +55,7 @@ ERC20PaymentStandard.sol
 
 Introduction
 ------------
-The payment contract of a loan can be custom made and it's encouraged to be. But they all should be based off the ERC20PaymentStandard. That's not to say payment contracts must be ERC20 payment contracts but they must have functions like this so bonds can call them and interact with features of the contract. All the functions in this contract are virual so they can be overridden by any child contract. An example of a child contract will be bellow with the ERC20CollateralPayment contract. NOTE: onERC1155BatchReceived is not implemented. Only single ERC1155 transfers handle payment withdrawl.
+The payment contract of a loan can be custom made and it's encouraged to be. But they all should be based off the ERC20PaymentStandard. That's not to say payment contracts must be ERC20 payment contracts but they must have functions like this so bonds can call them and interact with features of the contract. All the functions in this contract are virual so they can be overridden by any child contract. An example of a child contract will be bellow with the ERC20CollateralPayment contract.
 
 Loans/Lookups
 -------------
@@ -111,6 +114,9 @@ Returns true if a loanID reflects a complete and paid off loan
 
 `getId(address, uint256) external view;`
 This function creates an ID for a loan. This is the hash of the address of a borrower, address of this address, and the index in the loanIDs array
+
+`withdrawl(uint256, uint256) external`
+This function is used to exchange ERC1155s as a lender for the ERC20s made as payments. 1 for 1. MUST approve in the Bonds contract before calling  
 
 ERC20CollateralStandard.sol
 ===========================

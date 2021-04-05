@@ -58,6 +58,21 @@ contract Bonds is ERC1155 {
         _mint(creator, _id, amm, "");
     }
     
+    /**
+    * @notice function stakes an ammount of ERC-1155's with id from sender
+    * @param _id is the token's id
+    * @param _amm is the ammount to stake
+     */
+    function stake(uint256 _id, uint256 _amm) external {
+        safeTransferFrom(msg.sender, address(this), _id, _amm, "");
+        _push(IOU(
+            true,
+            _id,
+            _amm,
+            block.timestamp
+        ),msg.sender);
+    }
+
     /** 
     * @notice function unstakes bonds
     * @param _index is the index in the linked list mentioned above with state varaibles
@@ -104,9 +119,7 @@ contract Bonds is ERC1155 {
         return((block.timestamp - iou.timeStaked)/accrualPeriod);
     }
     
-    /**
-    * @notice the function to hold an ERC1155. Coppied from @Openzeppelin. Only difference is here the function stakes any ERC-1155s sent to it
-     */
+    /// @notice ERC1155 receiver function
     function onERC1155Received
         (
         address _operator,
@@ -118,13 +131,10 @@ contract Bonds is ERC1155 {
         public 
         returns(bytes4)
         {
-            stake(_id,_value,_from);
             return this.onERC1155Received.selector;
     }
 
-    /**
-    * @notice Also a requirement coppied from @openzeppelin. Just handles batch staking
-     */
+    /// @notice ERC1155 batch receiver function
     function onERC1155BatchReceived
         (
         address _operator, 
@@ -137,10 +147,6 @@ contract Bonds is ERC1155 {
         virtual 
         returns (bytes4) 
             {
-                require(_ids.length == _values.length, "_ids and _values must be the same length");
-                for(uint i = 0; i<_ids.length; i++){
-                    stake(_ids[i],_values[i],_from);
-                }
             return this.onERC1155BatchReceived.selector;
     }
 
@@ -200,20 +206,6 @@ contract Bonds is ERC1155 {
         staking[msg.sender][_index].next = 0;
         staking[msg.sender][_index].last = 0;
         
-    }
-    /**
-    * @notice function stakes an ammount of ERC-1155's with id from sender
-    * @param _id is the token's id
-    * @param _amm is the ammount to stake
-    * @param _who is who to stake
-     */
-    function stake(uint256 _id, uint256 _amm, address _who) private {
-        _push(IOU(
-            true,
-            _id,
-            _amm,
-            block.timestamp
-        ),_who);
     }
 }
 

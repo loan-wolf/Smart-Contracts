@@ -4,6 +4,7 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
 import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
+import {IERC1155} from '@openzeppelin/contracts/token/ERC1155/IERC1155.sol';
 import {IERC20PaymentStandard} from './IERC20PaymentStandard.sol';
 
 /**
@@ -186,15 +187,19 @@ contract ERC20PaymentStandard is ERC1155Holder{
         loanLookup[_id].paymentComplete += _erc20Ammount;                                //Increase paymentComplete
     }
     
-    /*
-     * handles payment collection automatically when ERC1155s are sent. Function overriden from OpenZeppelin ERC1155Holder.sol
+    /**
+    * @notice MUST approve this contract to spend your ERC1155s in bonds. Used to have this auto handled by the on received function.
+    * However that was not a good idea as a hacker could create fake bonds.
+    * @param _id is the id of the bond to send in
+    * @param _amm is the ammount to send
      */
-    function onERC1155Received(address _operator, address _from, uint256 _id, uint256 _value, bytes calldata _data) public virtual override returns(bytes4){
-        require(loanLookup[_id].issued, "this loan has not been issued yet. How do you even have bonds for it???");
-        require(_value <= loanLookup[_id].awaitingCollection,"There is not enough payments available for collection");
+    function withdrawl(uint256 _id, uint256 _amm) external virtual{
+        IERC1155 erc1155 = IERC1155(bondContract);
         IERC20 erc20 = IERC20(loanLookup[_id].ERC20Address);
-        erc20.transfer(_from, _value);
-        return this.onERC1155Received.selector;
+        require(loanLookup[_id].issued, "this loan has not been issued yet. How do you even have bonds for it???");
+        require(_amm <= loanLookup[_id].awaitingCollection,"There is not enough payments available for collection");
+        erc1155.safeTransferFrom(msg.sender, address(this), _id, _amm, "");
+        erc20.transfer(msg.sender, _amm);
     }
     
     /**
