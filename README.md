@@ -117,7 +117,7 @@ ERC20CollateralStandard.sol
 This contract is an example of a custom implementation of the ERC20PaymentStandard. This child contract inherits everything from it's parent but adds the ability to post ERC20 collateral to a loan. It adds a collateralLookup mapping to store the ERC20 contract address and the ammount as collateral. It also overrides the ERC-1155 recieve function to handle collateral withdrawl if a loan is marked delinquent. If the loan is completed the borrower can withdrawl. NOTE: onERC1155BatchReceived is not implemented. Only single ERC1155 transfers handle collaterall colleciton. The new functions added are as follows:  
 
 `addCollateral(address _ERC20Contract, uint256 _ammount, uint256 _loanId) external`
-Only borrower can call this and add collateral at any point but can only add collateral once. The ERC20 contract here does not have to be the same as the one in payment and can instead be anything.
+Only borrower can call this and add collateral at any point but can only add one kind of collateral. The ERC20 contract here does not have to be the same as the one in payment and can instead be anything. But if you choose to add more collateral it must be of the same ERC20 as the first one was. 
 
 `returnCollateral(uint256 _loanId) external`
 Function returns the collateral to the borrower if the loan is completed and borrower is calling.

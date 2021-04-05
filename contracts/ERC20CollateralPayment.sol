@@ -31,9 +31,13 @@ contract ERC20CollateralPayment is ERC20PaymentStandard{
      */
     function addCollateral(address _ERC20Contract, uint256 _ammount, uint256 _loanId) external{
         require(loanLookup[_loanId].borrower == msg.sender, "only the borrower can add collateral");
-        require(collateralLookup[_loanId].ammount == 0, "Can only add collateral once");
         IERC20 erc20 = IERC20(_ERC20Contract);
-        collateralLookup[_loanId] = collateral(_ERC20Contract, _ammount);
+        if(collateralLookup[_loanId].ammount == 0){
+            collateralLookup[_loanId] = collateral(_ERC20Contract, _ammount);
+        }else{
+            require(_ERC20Contract == collateralLookup[_loanId].ERC20Contract, "When increasing collateral, you must use the same ERC20 address ");
+            collateralLookup[_loanId].ammount += _ammount;
+        }
         erc20.transferFrom(msg.sender, address(this), _ammount);
     }
 
@@ -48,23 +52,28 @@ contract ERC20CollateralPayment is ERC20PaymentStandard{
         erc20.transfer(msg.sender, collateralLookup[_loanId].ammount);
     }
 
-    /*
-     * handles payment collection automatically when ERC1155s are sent. Overriden from ERC20PaymentStandard.sol
+    /**
+    * @notice MUST approve this contract to spend your ERC1155s in bonds. Used to have this auto handled by the on received function.
+    * However that was not a good idea as a hacker could create fake bonds.
+    * @param _id is the id of the bond to send in
+    * @param _amm is the ammount to send
      */
-    function onERC1155Received(address _operator, address _from, uint256 _id, uint256 _value, bytes calldata _data) public override returns(bytes4){
-        require(loanLookup[_id].issued, "this loan has not been issued yet. How do you even have bonds for it???");
-        require(_value <= loanLookup[_id].awaitingCollection,"There is not enough payments available for collection");
+    function withdrawl(uint256 _id, uint256 _amm) external override{
+        IERC1155 erc1155 = IERC1155(bondContract);
         IERC20 erc20 = IERC20(loanLookup[_id].ERC20Address);
-        erc20.transfer(_from, _value);
-        //Handle collaterall transfer (first come first serve) if delinquent 
+        IERC20 col = IERC20(collateralLookup[_id].ERC20Contract);
+        require(loanLookup[_id].issued, "this loan has not been issued yet. How do you even have bonds for it???");
+        require(_amm <= loanLookup[_id].awaitingCollection,"There is not enough payments available for collection");
+        erc1155.safeTransferFrom(msg.sender, address(this), _id, _amm, "");
+        erc20.transfer(msg.sender, _amm);
         if(isDelinquent(_id) && collateralLookup[_id].ammount !=0){
-            IERC20 col = IERC20(collateralLookup[_id].ERC20Contract);
-            if(collateralLookup[_id].ammount < _value){
-                col.transfer(_from, collateralLookup[_id].ammount);
+            if(collateralLookup[_id].ammount < _amm){
+                collateralLookup[_id].ammount = 0;
+                col.transfer(msg.sender, collateralLookup[_id].ammount);
             }else{
-                col.transfer(_from, _value);
+                collateralLookup[_id].ammount -= _amm;
+                col.transfer(msg.sender, _amm);
             }
         }
-        return this.onERC1155Received.selector;
     }
 }
