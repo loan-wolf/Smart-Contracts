@@ -87,7 +87,7 @@ This function is called when new bond NFTs are minted. It should verify that the
 This updates the `totalPaymentsValue` variable with new interest. Is called when a lender unstakes their loans in Bonds.sol
 
 `getInterest(uint256) external view returns(uint256);`
-This returns teh interestRateInverse for a loan. For Bonds.sol to use so it doesn't have to parse a struct
+This returns the interestRateInverse for a loan. For Bonds.sol to use so it doesn't have to parse a struct
 
 `isDelinquent(uint256) external view returns(bool);`
 Returns true if the loan is delinquent. Can be overridden to return based off any kind of terms. But for now that term is "if minPayment is not made by paymentDueDate"
