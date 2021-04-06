@@ -63,10 +63,10 @@ contract ERC20CollateralPayment is ERC20PaymentStandard{
         IERC20 erc20 = IERC20(loanLookup[_id].ERC20Address);
         IERC20 col = IERC20(collateralLookup[_id].ERC20Contract);
         require(loanLookup[_id].issued, "this loan has not been issued yet. How do you even have bonds for it???");
-        require(_amm <= loanLookup[_id].awaitingCollection,"There is not enough payments available for collection");
         erc1155.safeTransferFrom(msg.sender, address(this), _id, _amm, "");
-        erc20.transfer(msg.sender, _amm);
+        //if loan is delinquent and there's collateral to collect
         if(isDelinquent(_id) && collateralLookup[_id].ammount !=0){
+            //determine if we should send remainder of collateral or exact ammount of bonds sent
             if(collateralLookup[_id].ammount < _amm){
                 collateralLookup[_id].ammount = 0;
                 col.transfer(msg.sender, collateralLookup[_id].ammount);
@@ -74,6 +74,15 @@ contract ERC20CollateralPayment is ERC20PaymentStandard{
                 collateralLookup[_id].ammount -= _amm;
                 col.transfer(msg.sender, _amm);
             }
+        }else{
+            if(_amm > loanLookup[_id].awaitingCollection){
+                revert("The ammount your are trying to collect is not available. And/Or there is no collateral to collect");
+            }
         }
+        //if there's payments to collect in this ammount, collect them.
+        if(_amm <= loanLookup[_id].awaitingCollection){
+            erc20.transfer(msg.sender, _amm);
+        }
+
     }
 }
