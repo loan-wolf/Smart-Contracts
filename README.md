@@ -95,7 +95,7 @@ This returns the interestRateInverse for a loan. For Bonds.sol to use so it does
 `isDelinquent(uint256) external view returns(bool);`
 Returns true if the loan is delinquent. Can be overridden to return based off any kind of terms. But for now that term is "if minPayment is not made by paymentDueDate"
 
-`configureNew(address, address, uint256, uint256, uint256, uint256, uint256)external;`
+`configureNew(address, address, uint256, uint256, uint256, uint256, uint256)external returns(uint256);`
 This function configures a new loan for a given borrower. ANYONE can configure a loan for anyone else. But only the borrower can mint the ERC-1155s and thus begin the loan. A lender can call this function with a borrowers name to give a sort of "loan request" the borrower can choose to accept by minting the ERC-1155s for it. The parameters are listed bellow:
 
 - `_erc20` is the ERC20 contract address that will be used for payments
@@ -105,6 +105,8 @@ This function configures a new loan for a given borrower. ANYONE can configure a
 - `_principal` the origional loan value before interest
 - `_inverseInterestRate` the interest rate expressed as inverse. 2% = 1/5 = inverse of 5
 - `_accrualPeriod` the time it takes for interest to accrue in seconds
+
+returns the id of the contract that was just created  
 
 `payment(uint256, uint256) external;`
 This is the function that borrower calls to make their payments. IMPORTANT: You must approve the transfer with the designated ERC20 contract first.

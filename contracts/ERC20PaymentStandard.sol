@@ -127,6 +127,7 @@ contract ERC20PaymentStandard is ERC1155Holder{
     * @param _principal the origional loan value before interest
     * @param _inverseInterestRate the interest rate expressed as inverse. 2% = 1/5 = inverse of 5
     * @param _accrualPeriod the time it takes for interest to accrue in seconds
+    * @return the id it just created
      */
     function configureNew(
     address _erc20,
