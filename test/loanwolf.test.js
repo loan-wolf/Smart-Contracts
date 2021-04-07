@@ -1,4 +1,5 @@
 const { assert, expect } = require("chai");
+const timeMachine = require('ganache-time-traveler');
 require("chai")
     .use(require("chai-as-promised"))
     .should();
@@ -23,10 +24,6 @@ const staking = true;                  //if true then wait the time for staking 
 //Helper functions
 function tokens(n){
     return web3.utils.toWei(n,"ether");
-}
-
-function wait(time){
-    return new Promise(resolve => setTimeout(resolve, time));
 }
 
 let bonds, payment, mockDai, hackerBonds;
@@ -163,7 +160,7 @@ contract(Bonds, async([dev,borrower1,lender1, lender2, hacker]) => {
         });
 
         it('Wait for interest acruall seconds', async() => {
-            await wait(1000*accrualPeriod);
+            await timeMachine.advanceTimeAndBlock(accrualPeriod);
             assert(true);
         });
 

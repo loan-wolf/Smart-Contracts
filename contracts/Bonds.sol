@@ -17,7 +17,6 @@ contract Bonds is ERC1155 {
     /// @dev may one day use this in payment standard as well to itterate through loans per person.
     //Data held per person to keep track of staking
     struct IOU{
-        bool staking;
         uint256 ID;
         uint256 ammount;
         uint256 timeStaked;
@@ -46,7 +45,7 @@ contract Bonds is ERC1155 {
     /**
     * @notice function creates the tokens for a new loan so they can be sold to generate funding
     * @param _paymentContractAddress is the address of the loan's contract. "Borrower" in this
-    * @param _id is the ID of the loan you;re minting
+    * @param _id is the ID of the loan you're minting
      */
     function newLoan(address _paymentContractAddress, uint256 _id) external{
         IERC20PaymentStandard pc = IERC20PaymentStandard(_paymentContractAddress);
@@ -59,14 +58,13 @@ contract Bonds is ERC1155 {
     }
     
     /**
-    * @notice function stakes an ammount of ERC-1155's with id from sender
+    * @notice function stakes an ammount of ERC-1155's with id from sender. MUST Approve contract first
     * @param _id is the token's id
     * @param _amm is the ammount to stake
      */
     function stake(uint256 _id, uint256 _amm) external {
         safeTransferFrom(msg.sender, address(this), _id, _amm, "");
         _push(IOU(
-            true,
             _id,
             _amm,
             block.timestamp
@@ -80,17 +78,17 @@ contract Bonds is ERC1155 {
      */
     function unstake(uint256 _index) external returns(bool){
         require(!_isEmpty(msg.sender), "You are not staking any NFTs");
+        //Get some important variables
         uint256 id = staking[msg.sender][_index].value.ID; 
         uint256 amm = staking[msg.sender][_index].value.ammount;
-        uint256 x = getAccruances(msg.sender,_index);
+        uint256 periodsStaked = getAccruances(msg.sender,_index);
         address paymentContract = IDToContract[id];
-        //Reset the staking for sender before calling any functions
         
         //Remove staking from the ll
         _del(_index, msg.sender);
         //Call the payment contract before minting or transfering any tokens
         IERC20PaymentStandard pc = IERC20PaymentStandard(paymentContract);
-        uint256 toMint = x * (amm / pc.getInterest(id));
+        uint256 toMint = periodsStaked * (amm / pc.getInterest(id));
         bool r;                 //Store return so we can call other contract before mint funciton. Don't want callback attacks
         //Update the balance with new interest. Store return value based on response.
         if(pc.addInterest(toMint, id)){
@@ -112,7 +110,7 @@ contract Bonds is ERC1155 {
      */
     function getAccruances(address _who, uint256 _index) public view returns(uint256) {
         IOU memory iou = staking[_who][_index].value;
-        require(iou.staking,"You are not staking any NFTs");
+        require(iou.ID != 0,"You are not staking any tokens at this index");
         address paymentContract = IDToContract[iou.ID];
         IERC20PaymentStandard pc = IERC20PaymentStandard(paymentContract);
         uint256 accrualPeriod = pc.getInterest(iou.ID);
@@ -198,7 +196,6 @@ contract Bonds is ERC1155 {
         staking[_who][b].last = staking[_who][_index].last;
         
         staking[msg.sender][_index].value = IOU(
-            false,
             0,
             0,
             0

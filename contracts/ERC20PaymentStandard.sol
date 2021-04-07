@@ -100,7 +100,7 @@ contract ERC20PaymentStandard is ERC1155Holder{
     }
 
     /**
-    * @notice get the interest rate of a loan. Makes it easy for other contract since it doens't have to use parse struct
+    * @notice get the interest rate of a loan. Makes it easy for other contract since it doens't have to parse struct
     * @param _id is the loan ID
     * @return inverse interest rate
      */
@@ -195,11 +195,11 @@ contract ERC20PaymentStandard is ERC1155Holder{
     * @param _amm is the ammount to send
      */
     function withdrawl(uint256 _id, uint256 _amm) external virtual{
-        IERC1155 erc1155 = IERC1155(bondContract);
+        IERC1155 bonds = IERC1155(bondContract);
         IERC20 erc20 = IERC20(loanLookup[_id].ERC20Address);
         require(loanLookup[_id].issued, "this loan has not been issued yet. How do you even have bonds for it???");
-        require(_amm <= loanLookup[_id].awaitingCollection,"There is not enough payments available for collection");
-        erc1155.safeTransferFrom(msg.sender, address(this), _id, _amm, "");
+        require(_amm <= loanLookup[_id].awaitingCollection,"There are not enough payments available for collection");
+        bonds.safeTransferFrom(msg.sender, address(this), _id, _amm, "");
         erc20.transfer(msg.sender, _amm);
     }
     
