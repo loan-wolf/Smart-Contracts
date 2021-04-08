@@ -6,7 +6,22 @@ pragma solidity ^0.8.0;
 * @author Carson Case
  */
 interface IERC20PaymentStandard{
-    
+    struct loan {
+        bool issued;
+        address ERC20Address;
+        address borrower;
+        //bytes32 merkleRoot;
+        uint256 paymentPeriod;
+        uint256 paymentDueDate;
+        uint256 minPayment;
+        uint256 interestRateInverse;
+        uint256 accrualPeriod;
+        uint256 principal;
+        uint256 totalPaymentsValue;
+        uint256 awaitingCollection;
+        uint256 paymentComplete;
+    }
+
     
     function getNumberOfLoans(address) external view returns(uint256);
     
