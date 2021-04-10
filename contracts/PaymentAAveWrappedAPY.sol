@@ -106,6 +106,7 @@ contract PaymentAAveWrappedAPY is ERC20PaymentStandard{
             issued: false,
             ERC20Address: _erc20,
             borrower: msg.sender,
+            merkleRoot: keccak256("Hello World"),
             paymentPeriod: _paymentPeriod,
             paymentDueDate: block.timestamp + _paymentPeriod,
             minPayment: _minPayment,

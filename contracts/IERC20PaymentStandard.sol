@@ -10,7 +10,7 @@ interface IERC20PaymentStandard{
         bool issued;
         address ERC20Address;
         address borrower;
-        //bytes32 merkleRoot;
+        bytes32 merkleRoot;
         uint256 paymentPeriod;
         uint256 paymentDueDate;
         uint256 minPayment;
