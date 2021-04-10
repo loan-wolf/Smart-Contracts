@@ -19,7 +19,7 @@ contract ERC20PaymentStandard is ERC1155Holder{
         bool issued;
         address ERC20Address;
         address borrower;
-        //bytes32 merkleRoot;
+        bytes32 merkleRoot;
         uint256 paymentPeriod;
         uint256 paymentDueDate;
         uint256 minPayment;
@@ -150,6 +150,7 @@ contract ERC20PaymentStandard is ERC1155Holder{
             issued: false,
             ERC20Address: _erc20,
             borrower: msg.sender,
+            merkleRoot: keccak256("Hello World"),
             paymentPeriod: _paymentPeriod,
             paymentDueDate: block.timestamp + _paymentPeriod,
             minPayment: _minPayment,
