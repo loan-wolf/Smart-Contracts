@@ -23,7 +23,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [
@@ -47,7 +48,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [
@@ -126,7 +128,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [
@@ -223,7 +226,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [
@@ -242,7 +246,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [
@@ -309,7 +314,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [
@@ -328,7 +334,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [
@@ -432,7 +439,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [
@@ -456,7 +464,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     }
   ],
   "metadata": "{\"compiler\":{\"version\":\"0.8.1+commit.df193b15\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_bonds\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_amm\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"_id\",\"type\":\"uint256\"}],\"name\":\"addInterest\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"bondContract\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_erc20\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_borrower\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_minPayment\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"_paymentPeriod\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"_principal\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"_inverseInterestRate\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"_accrualPeriod\",\"type\":\"uint256\"}],\"name\":\"configureNew\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_borrower\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_index\",\"type\":\"uint256\"}],\"name\":\"getId\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_id\",\"type\":\"uint256\"}],\"name\":\"getInterest\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_who\",\"type\":\"address\"}],\"name\":\"getNumberOfLoans\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_id\",\"type\":\"uint256\"}],\"name\":\"isComplete\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_id\",\"type\":\"uint256\"}],\"name\":\"isDelinquent\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_id\",\"type\":\"uint256\"}],\"name\":\"issueBonds\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"loanIDs\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"loanLookup\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"issued\",\"type\":\"bool\"},{\"internalType\":\"address\",\"name\":\"ERC20Address\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"borrower\",\"type\":\"address\"},{\"internalType\":\"bytes32\",\"name\":\"merkleRoot\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"paymentPeriod\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"paymentDueDate\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"minPayment\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"interestRateInverse\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"accrualPeriod\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"principal\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"totalPaymentsValue\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"awaitingCollection\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"paymentComplete\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"uint256[]\",\"name\":\"\",\"type\":\"uint256[]\"},{\"internalType\":\"uint256[]\",\"name\":\"\",\"type\":\"uint256[]\"},{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"name\":\"onERC1155BatchReceived\",\"outputs\":[{\"internalType\":\"bytes4\",\"name\":\"\",\"type\":\"bytes4\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"name\":\"onERC1155Received\",\"outputs\":[{\"internalType\":\"bytes4\",\"name\":\"\",\"type\":\"bytes4\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_id\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"_erc20Ammount\",\"type\":\"uint256\"}],\"name\":\"payment\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes4\",\"name\":\"interfaceId\",\"type\":\"bytes4\"}],\"name\":\"supportsInterface\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_id\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"_amm\",\"type\":\"uint256\"}],\"name\":\"withdrawl\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"author\":\"Carson Case\",\"kind\":\"dev\",\"methods\":{\"addInterest(uint256,uint256)\":{\"params\":{\"_amm\":\"the ammount of interest to add\",\"_id\":\"is the id of the loan\"},\"returns\":{\"_0\":\"true if added. Will not add interest if payment has been completed. This prevents lenders from refusing to end a loan when it is rightfully over by forever increasing the totalPaymentsValue through interest staking and never fully collecting payment. This also means that if lenders do not realize interest gains soon enough they may not be able to collect them before the borrower can complete the loan.\"}},\"configureNew(address,address,uint256,uint256,uint256,uint256,uint256)\":{\"details\":\"borrower is msg.sender for testing. In production might want to make this a param\",\"params\":{\"_accrualPeriod\":\"the time it takes for interest to accrue in seconds\",\"_borrower\":\"is the borrower loan is being configured for. Keep in mind. ONLY this borrower can mint bonds to start the loan\",\"_erc20\":\"is the ERC20 contract address that will be used for payments\",\"_inverseInterestRate\":\"the interest rate expressed as inverse. 2% = 1/5 = inverse of 5\",\"_minPayment\":\"is the minimum payment that must be made before the payment period ends\",\"_paymentPeriod\":\"payment must be made by this time or delinquent function will return true\",\"_principal\":\"the origional loan value before interest\"},\"returns\":{\"_0\":\"the id it just created\"}},\"constructor\":{\"params\":{\"_bonds\":\"contract\"}},\"getId(address,uint256)\":{\"params\":{\"_borrower\":\"is borrower\",\"_index\":\"is the index in the borrowers loan array\"},\"returns\":{\"_0\":\"the loan ID\"}},\"getInterest(uint256)\":{\"params\":{\"_id\":\"is the loan ID\"},\"returns\":{\"_0\":\"inverse interest rate\"}},\"getNumberOfLoans(address)\":{\"params\":{\"_who\":\"is who to look up\"},\"returns\":{\"_0\":\"length\"}},\"isComplete(uint256)\":{\"params\":{\"_id\":\"of loan to check\"},\"returns\":{\"_0\":\"return if the contract is payed off or not as bool\"}},\"isDelinquent(uint256)\":{\"params\":{\"_id\":\"is the hash id of the loan. Same as bond ERC1155 ID as well\"},\"returns\":{\"_0\":\"if delinquent or not. Meaning missed a payment\"}},\"issueBonds(uint256)\":{\"params\":{\"_id\":\"loan ID\"},\"returns\":{\"_0\":\"the loan principal (so bonds knows how many NFTs to mint)\",\"_1\":\"the borrowers address (so bonds can make sure borrower is calling this function)\"}},\"payment(uint256,uint256)\":{\"params\":{\"_erc20Ammount\":\"is ammount in loan's ERC20 to pay\",\"_id\":\"to pay off\"}},\"supportsInterface(bytes4)\":{\"details\":\"See {IERC165-supportsInterface}.\"},\"withdrawl(uint256,uint256)\":{\"params\":{\"_amm\":\"is the ammount to send\",\"_id\":\"is the id of the bond to send in\"}}},\"title\":\"ERC20PaymentStandard\",\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{\"addInterest(uint256,uint256)\":{\"notice\":\"Called each time new NFTs are minted by staking\"},\"configureNew(address,address,uint256,uint256,uint256,uint256,uint256)\":{\"notice\":\"contract must be configured before bonds are issued. Pushes new loan to array for user\"},\"constructor\":{\"notice\":\"just sets bonds contract\"},\"getId(address,uint256)\":{\"notice\":\"Returns the ID for a loan given the borrower and index in the array\"},\"getInterest(uint256)\":{\"notice\":\"get the interest rate of a loan. Makes it easy for other contract since it doens't have to parse struct\"},\"getNumberOfLoans(address)\":{\"notice\":\"gets the number of loans a person has\"},\"isComplete(uint256)\":{\"notice\":\"helper function\"},\"isDelinquent(uint256)\":{\"notice\":\"This contract is not very forgiving. Miss one payment and you're marked as delinquent. Unless contract is complete\"},\"issueBonds(uint256)\":{\"notice\":\"called when bonds are issued so as to make sure lender can only mint bonds once.\"},\"payment(uint256,uint256)\":{\"notice\":\"function handles the payment of the loan. Does not have to be borrower as payment comes in. The contract holds it until collection by bond owners. MUST APPROVE FIRST in ERC20 contract first\"},\"withdrawl(uint256,uint256)\":{\"notice\":\"MUST approve this contract to spend your ERC1155s in bonds. Used to have this auto handled by the on received function. However that was not a good idea as a hacker could create fake bonds.\"}},\"notice\":\"This contract is a standard meant to be overriden that works with the Bonds contract to offer noncolateralized, flexable lending onchain\",\"version\":1}},\"settings\":{\"compilationTarget\":{\"/home/carson/Documents/linkHackathon2021/loan-wolf/contracts/contracts/ERC20PaymentStandard.sol\":\"ERC20PaymentStandard\"},\"evmVersion\":\"byzantium\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[]},\"sources\":{\"/home/carson/Documents/linkHackathon2021/loan-wolf/contracts/contracts/ERC20PaymentStandard.sol\":{\"keccak256\":\"0x95b2e78e8270c6087eb21ab3cfe827e181223cd901f64c0190d4689f8495e844\",\"license\":\"None\",\"urls\":[\"bzz-raw://44b3d5887eff3899b62d9445092804a8e0466c48ad0a068600e82ac48f39d846\",\"dweb:/ipfs/QmNXV8eGg7G3r7W2QpDNjuforgejC1Kt31yx5dNn2w2wUx\"]},\"@openzeppelin/contracts/token/ERC1155/IERC1155.sol\":{\"keccak256\":\"0x249bc2a6d919da5f5145950664134cfcf2f66874bda801fd3b8fb861783da079\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://2db9d720fadb1315ba64790815f9f1d80237cca584fc530b8906519bd46ff4cc\",\"dweb:/ipfs/QmXQSGPuGHG5e9ZRVbcUymP3B78cn6ZjfaiaEwd3P3yBCF\"]},\"@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol\":{\"keccak256\":\"0xc7aa8a96aaeb7e1672a3d5fd37582136ff46b6a6cafabcc40ec0e00a42915e1c\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://f294719963da5d6c0aa89f6e79eb6dbcbcc258a2f42686e735dbb0791593a761\",\"dweb:/ipfs/QmTnVcJfNe5728bUBhjMmBXJFDR1HwVQfw9jGmexbGmS7z\"]},\"@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol\":{\"keccak256\":\"0x2ccdc162657b677334eb08a60bb50a0dd74b22eff7150abb06487f58dbebd5e5\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://fff47f23d2b9cfce4660566d3e5fa355959a6f3ba8c8394271addd9845a07d58\",\"dweb:/ipfs/QmU6vHnARdZscV47wHaPRnzS3pqSKG3YoLbhMUbyAHxLda\"]},\"@openzeppelin/contracts/token/ERC1155/utils/ERC1155Receiver.sol\":{\"keccak256\":\"0xfb1161632a10d0bd366c80db583246fa490183b45ec4f59acb43b97d1a7437b3\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://c1b773c4f83eed25714e54f3ac4d7d5c43f70ba9adf7a0039870395280d57ab0\",\"dweb:/ipfs/QmeMWUj4afupT66btFmbXPWePdv1NAVbJuAGwb3YmDGjH5\"]},\"@openzeppelin/contracts/token/ERC20/IERC20.sol\":{\"keccak256\":\"0xf8e8d118a7a8b2e134181f7da655f6266aa3a0f9134b2605747139fcb0c5d835\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://9ec48567e7ad06acb670980d5cdf3fd7f3949bf12894f02d68c3bb43e75aa84f\",\"dweb:/ipfs/QmaG3R2J9cz92YT77vFjYrjMNU2wHp4ypwYD62HqDUqS5U\"]},\"@openzeppelin/contracts/utils/introspection/ERC165.sol\":{\"keccak256\":\"0x5718c5df9bd67ac68a796961df938821bb5dc0cd4c6118d77e9145afb187409b\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://d10e1d9b26042424789246603906ad06143bf9a928f4e99de8b5e3bdc662f549\",\"dweb:/ipfs/Qmejonoaj5MLekPus229rJQHcC6E9dz2xorjHJR84fMfmn\"]},\"@openzeppelin/contracts/utils/introspection/IERC165.sol\":{\"keccak256\":\"0xa28007762d9da9db878dd421960c8cb9a10471f47ab5c1b3309bfe48e9e79ff4\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://796ab6e88af7bf0e78def0f059310c903af6a312b565344e0ff524a0f26e81c6\",\"dweb:/ipfs/QmcsVgLgzWdor3UnAztUkXKNGcysm1MPneWksF72AvnwBx\"]}},\"version\":1}",
@@ -21348,12 +21357,13 @@
     "5777": {
       "events": {},
       "links": {},
-      "address": "0x6888a275EEAeaCE80E4F1C7b03Ad8144BEb59656",
-      "transactionHash": "0x85a3eaec416a58044feb02e8794200a08cc4fe47d52884f9422ddbf73514ec3e"
+      "address": "0x7FD00C3797EdaD653392c89251a3aAE30f70b5E7",
+      "transactionHash": "0x13184ba9d01f71d11610ec5a233f7959c5510c8c954152b4c87b6f713a1bbeb6"
     }
   },
   "schemaVersion": "3.3.4",
-  "updatedAt": "2021-04-10T02:55:55.768Z",
+  "updatedAt": "2021-04-10T03:57:04.010Z",
+  "networkType": "ethereum",
   "devdoc": {
     "author": "Carson Case",
     "kind": "dev",
