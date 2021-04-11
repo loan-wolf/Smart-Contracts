@@ -1,25 +1,29 @@
 /// SPDX-License-Identifier: None
-pragma solidity ^0.8.0;
+pragma solidity ^0.6.6;
 
-import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
+import "@openzeppelin/contracts/token/ERC1155/ERC1155Holder.sol";
 import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import {IERC1155} from '@openzeppelin/contracts/token/ERC1155/IERC1155.sol';
-
+import "@chainlink/contracts/src/v0.6/ChainlinkClient.sol";
 /**
 * @title ERC20PaymentStandard
 * @author Carson Case
 * @notice This contract is a standard meant to be overriden that works with the Bonds contract to offer noncolateralized, flexable lending onchain
  */
-contract ERC20PaymentStandard is ERC1155Holder{
+contract ERC20PaymentStandard is ERC1155Holder, ChainlinkClient{
+    //Just Chainlink things
+    address private oracle = 0x2f90A6D021db21e1B2A077c5a37B3C7E75D15b7e;
+    bytes32 private jobId = "29fa9aa13bf1468788b7cc4a500a45b8";
+    uint256 private fee = 0.1 * 10 ** 18; // 0.1 LINK
+
     // Initialized in constructor
     address public bondContract;
-    
     //Loan object. Stores lots of info about each loan
     struct loan {
         bool issued;
         address ERC20Address;
         address borrower;
-        bytes32 merkleRoot;
+        bytes32 chainlinkRequestId;
         uint256 paymentPeriod;
         uint256 paymentDueDate;
         uint256 minPayment;
@@ -34,12 +38,13 @@ contract ERC20PaymentStandard is ERC1155Holder{
     //Two mappings. One to get the loans for a user. And the other to get the the loans based off id
     mapping(uint256 => loan) public loanLookup;
     mapping(address => uint256[]) public loanIDs;
+    mapping(bytes32 => bytes32) public merkleRoots;
     
     /**
     * @notice just sets bonds contract
     * @param _bonds contract
      */
-    constructor(address _bonds){
+    constructor(address _bonds) public{
         bondContract = _bonds;
     }
     
@@ -144,13 +149,14 @@ contract ERC20PaymentStandard is ERC1155Holder{
         uint256 id = getId(_borrower, loanIDs[_borrower].length);
         //Push to loan IDs
         loanIDs[_borrower].push(id);
+
         //Add loan info to lookup
         loanLookup[id] = loan(
         {
             issued: false,
             ERC20Address: _erc20,
             borrower: msg.sender,
-            merkleRoot: keccak256("Hello World"),
+            chainlinkRequestId: 0x0,
             paymentPeriod: _paymentPeriod,
             paymentDueDate: block.timestamp + _paymentPeriod,
             minPayment: _minPayment,
@@ -162,6 +168,14 @@ contract ERC20PaymentStandard is ERC1155Holder{
             paymentComplete: 0
             }
         );
+        //Make Chainlink Request for Merkle Root
+        requestMerkleRoot(id);
+
+        //For Truffle tests. Just skip Chainlink request. I don't have a local chainlink system
+        //To mimic, just set chainlinkRequestId to hash of ID and merkle root to hash of "Hello World"
+        // bytes32 reqID = keccak256(abi.encodePacked(id));
+        // loanLookup[id].chainlinkRequestId = reqID;
+        // merkleRoots[reqID] = keccak256("Hello World");
         return id;
     }
     
@@ -228,5 +242,60 @@ contract ERC20PaymentStandard is ERC1155Holder{
             _index
         )));
         return id;
+    }
+
+    /**
+    * @notice Chainlink Get Request function to request merkle Root from backend server
+    * @param _id of loan
+     */
+    function requestMerkleRoot(uint256 _id) internal returns (bytes32 requestId) 
+    {
+        Chainlink.Request memory request = buildChainlinkRequest(jobId, address(this), this.fulfill.selector);
+        request.add("get", "http://40.121.211.35:5000/api/getloansdetails");
+        request.add("extPath",uint2str(_id));
+        request.add("path", "merkleroot");
+        // Sends the request
+        bytes32 b = sendChainlinkRequestTo(oracle, request, fee);
+        loanLookup[_id].chainlinkRequestId = b;
+        return b;
+    }
+
+    /**
+    * @notice Chainlink fulfill function. Called to set the merkle root for a request ID
+    * @param _requestId is the request ID
+    * @param _merkleRoot is what's returned
+    */
+    function fulfill(bytes32 _requestId, uint256 _merkleRoot) public recordChainlinkFulfillment(_requestId)
+    {
+        merkleRoots[_requestId] = bytes32(_merkleRoot);
+    }
+
+    /**
+    * @notice this was stolen from Stackoverflow post:
+    * https://stackoverflow.com/questions/47129173/how-to-convert-uint-to-string-in-solidity
+    * Big thanks to Barnabas Ujvari
+    * Just converts an int into a string
+    * @param _i as the uint to turn to string
+     */
+    function uint2str(uint256 _i) internal pure returns (string memory _uintAsString) {
+        if (_i == 0) {
+            return "0";
+        }
+        uint256 j = _i;
+        uint256 len;
+        while (j != 0) {
+            len++;
+            j /= 10;
+        }
+        bytes memory bstr = new bytes(len);
+        uint256 k = len;
+        while (_i != 0) {
+            k = k-1;
+            uint8 temp = (48 + uint8(_i - _i / 10 * 10));
+            bytes1 b1 = bytes1(temp);
+            bstr[k] = b1;
+            _i /= 10;
+        }
+        return string(bstr);
     }
 }

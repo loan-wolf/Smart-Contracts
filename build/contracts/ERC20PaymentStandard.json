@@ -21354,15 +21354,21 @@
     "version": "0.8.1+commit.df193b15.Emscripten.clang"
   },
   "networks": {
+    "42": {
+      "events": {},
+      "links": {},
+      "address": "0x112627aF8d3465204c57021cAbd106B63DAfbc0E",
+      "transactionHash": "0x8db4dca0a8e26ffb80edfdb693e7a9c800e4ba5ad17645ea4ffc0fb2c92bad4e"
+    },
     "5777": {
       "events": {},
       "links": {},
-      "address": "0x7FD00C3797EdaD653392c89251a3aAE30f70b5E7",
-      "transactionHash": "0x13184ba9d01f71d11610ec5a233f7959c5510c8c954152b4c87b6f713a1bbeb6"
+      "address": "0x3ff0285B9faF1f7E9b38E98a95C2410DE3259de8",
+      "transactionHash": "0xf760cffcab591bb68c391ea7529a3ea770e48b63887f6a530a7e261a2043f701"
     }
   },
   "schemaVersion": "3.3.4",
-  "updatedAt": "2021-04-10T03:57:04.010Z",
+  "updatedAt": "2021-04-11T02:13:49.138Z",
   "networkType": "ethereum",
   "devdoc": {
     "author": "Carson Case",

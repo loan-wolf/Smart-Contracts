@@ -1,5 +1,5 @@
 /// SPDX-License-Identifier: None
-pragma solidity ^0.8.0;
+pragma solidity ^0.6.6;
 
 import "./ERC20PaymentStandard.sol";
 import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
@@ -21,7 +21,7 @@ contract ERC20CollateralPayment is ERC20PaymentStandard{
     * @notice constructor just runs the ERC20PaymentStandard constructor
     * @param _bonds is the contract address of bonds
      */
-    constructor(address _bonds) ERC20PaymentStandard(_bonds){}
+    constructor(address _bonds) ERC20PaymentStandard(_bonds) public{}
 
     /**
     * @notice addCollateral must be called before issuing loan
