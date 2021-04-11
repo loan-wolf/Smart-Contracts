@@ -62,6 +62,8 @@ Introduction
 ------------
 The payment contract of a loan can be custom made and it's encouraged to be. But they all should be based off the ERC20PaymentStandard. That's not to say payment contracts must be ERC20 payment contracts but they must have functions like this so bonds can call them and interact with features of the contract. All the functions in this contract are virual so they can be overridden by any child contract. An example of a child contract will be bellow with the ERC20CollateralPayment contract.
 
+NOTE: The payment standard uses chainlink. If you publish a custom payment contract and do not override the use of chainlink, you will need to fund the contract with LINK
+
 Loans/Lookups
 -------------
 
