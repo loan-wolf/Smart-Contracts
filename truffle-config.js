@@ -44,11 +44,11 @@ module.exports = {
     // tab if you use this network and you must also set the `host`, `port` and `network_id`
     // options below to some value.
     //
-    development: {
-     host: "127.0.0.1",     // Localhost (default: none)
-     port: 7545,            // Standard Ethereum port (default: none)
-     network_id: "*",       // Any network (default: none)
-    },
+    // development: {
+    //  host: "127.0.0.1",     // Localhost (default: none)
+    //  port: 7545,            // Standard Ethereum port (default: none)
+    //  network_id: "*",       // Any network (default: none)
+    // },
     // Another network with more advanced options...
     // advanced: {
     // port: 8777,             // Custom port
@@ -60,12 +60,13 @@ module.exports = {
     // },
     // Useful for deploying to a public network.
     // NB: It's important to wrap the provider as a function.
-    // kovan: {
-    // provider: () => new HDWalletProvider(mnemonic, `https://kovan.infura.io/v3/f25cf8ec64f043be8e2dabac18c64661`),
-    // network_id: 42,       // Ropsten's id
-    // gas: 12500000,        // Ropsten has a lower block limit than mainnet
-    // networkCheckTimeout: 999999
-    // },
+    kovan: {
+    provider: () => new HDWalletProvider(mnemonic, `wss://kovan.infura.io/ws/v3/f25cf8ec64f043be8e2dabac18c64661`),
+    network_id: 42,       // Kovan's id
+    gas: 12500000,        // Kovan block limit
+    networkCheckTimeout: 999999,
+    timeoutBlocks: 200
+    },
     // Useful for private networks
     // private: {
     // provider: () => new HDWalletProvider(mnemonic, `https://network.io`),

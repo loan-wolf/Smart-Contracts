@@ -21,11 +21,11 @@ module.exports = async function (deployer, _network, addresses) {
 
   // const payment = await Payment.deployed();
 
-  // await deployer.deploy(
-  //   Collateral,
-  //   bonds.address,
-  //   {from: addresses[0]}
-  // );
+  await deployer.deploy(
+    Collateral,
+    bonds.address,
+    {from: addresses[0]}
+  );
 
   // await deployer.deploy(
   //   MockDai,

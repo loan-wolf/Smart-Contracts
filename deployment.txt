@@ -1,0 +1,217 @@
+
+Compiling your contracts...
+===========================
+> Compiling ./contracts/Bonds.sol
+> Compilation warnings encountered:
+
+    /home/carson/Documents/linkHackathon2021/loan-wolf/contracts/contracts/Bonds.sol:139:9: Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+        address _operator,
+        ^---------------^
+,/home/carson/Documents/linkHackathon2021/loan-wolf/contracts/contracts/Bonds.sol:140:9: Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+        address _from,
+        ^-----------^
+,/home/carson/Documents/linkHackathon2021/loan-wolf/contracts/contracts/Bonds.sol:141:9: Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+        uint256 _id,
+        ^---------^
+,/home/carson/Documents/linkHackathon2021/loan-wolf/contracts/contracts/Bonds.sol:142:9: Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+        uint256 _value,
+        ^------------^
+,/home/carson/Documents/linkHackathon2021/loan-wolf/contracts/contracts/Bonds.sol:143:9: Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+        bytes memory _data
+        ^----------------^
+,/home/carson/Documents/linkHackathon2021/loan-wolf/contracts/contracts/Bonds.sol:154:9: Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+        address _operator, 
+        ^---------------^
+,/home/carson/Documents/linkHackathon2021/loan-wolf/contracts/contracts/Bonds.sol:155:9: Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+        address _from, 
+        ^-----------^
+,/home/carson/Documents/linkHackathon2021/loan-wolf/contracts/contracts/Bonds.sol:156:9: Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+        uint256[] memory _ids, 
+        ^-------------------^
+,/home/carson/Documents/linkHackathon2021/loan-wolf/contracts/contracts/Bonds.sol:157:9: Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+        uint256[] memory _values, 
+        ^----------------------^
+,/home/carson/Documents/linkHackathon2021/loan-wolf/contracts/contracts/Bonds.sol:158:9: Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+        bytes memory _data
+        ^----------------^
+,/home/carson/Documents/linkHackathon2021/loan-wolf/contracts/contracts/Bonds.sol:137:5: Warning: Function state mutability can be restricted to pure
+    function onERC1155Received
+    ^ (Relevant source part starts here and spans across multiple lines).
+,/home/carson/Documents/linkHackathon2021/loan-wolf/contracts/contracts/Bonds.sol:152:5: Warning: Function state mutability can be restricted to pure
+    function onERC1155BatchReceived
+    ^ (Relevant source part starts here and spans across multiple lines).
+
+> Artifacts written to /home/carson/Documents/linkHackathon2021/loan-wolf/contracts/build/contracts
+> Compiled successfully using:
+   - solc: 0.6.6+commit.6c089d02.Emscripten.clang
+
+
+
+Migrations dry-run (simulation)
+===============================
+> Network name:    'kovan-fork'
+> Network id:      42
+> Block gas limit: 12500000 (0xbebc20)
+
+
+1_initial_migration.js
+======================
+
+   Replacing 'Migrations'
+   ----------------------
+   > block number:        24223836
+   > block timestamp:     1618155419
+   > account:             0xE1A2da2cf4ae4b8E28153Ab9e564f44F6FbCbF62
+   > balance:             1.130719078
+   > gas used:            158197 (0x269f5)
+   > gas price:           2 gwei
+   > value sent:          0 ETH
+   > total cost:          0.000316394 ETH
+
+   -------------------------------------
+   > Total cost:         0.000316394 ETH
+
+
+2_bonds_migration.js
+====================
+
+   Replacing 'Bonds'
+   -----------------
+   > block number:        24223838
+   > block timestamp:     1618155442
+   > account:             0x0ebB79C2BED9e60d1B2e8d6bBb582bE2dAC45c99
+   > balance:             99.99563031
+   > gas used:            2184845 (0x21568d)
+   > gas price:           2 gwei
+   > value sent:          0 ETH
+   > total cost:          0.00436969 ETH
+
+
+   Replacing 'ERC20PaymentStandard'
+   --------------------------------
+   > block number:        24223839
+   > block timestamp:     1618155461
+   > account:             0x0ebB79C2BED9e60d1B2e8d6bBb582bE2dAC45c99
+   > balance:             99.992133598
+   > gas used:            1748356 (0x1aad84)
+   > gas price:           2 gwei
+   > value sent:          0 ETH
+   > total cost:          0.003496712 ETH
+
+
+   Replacing 'ERC20CollateralPayment'
+   ----------------------------------
+   > block number:        24223840
+   > block timestamp:     1618155475
+   > account:             0x0ebB79C2BED9e60d1B2e8d6bBb582bE2dAC45c99
+   > balance:             99.987917504
+   > gas used:            2108047 (0x202a8f)
+   > gas price:           2 gwei
+   > value sent:          0 ETH
+   > total cost:          0.004216094 ETH
+
+   -------------------------------------
+   > Total cost:         0.012082496 ETH
+
+
+Summary
+=======
+> Total deployments:   4
+> Final cost:          0.01239889 ETH
+
+
+
+
+
+Starting migrations...
+======================
+> Network name:    'kovan'
+> Network id:      42
+> Block gas limit: 12500000 (0xbebc20)
+
+
+1_initial_migration.js
+======================
+
+   Replacing 'Migrations'
+   ----------------------
+   > transaction hash:    0xc7c42b873d9a0c67022545a6678e2841302daef7e44052b6fe89159511d089fc
+   > Blocks: 6            Seconds: 98
+   > contract address:    0xaf69a84A87742a7baC55911e0110D84ea7A4D764
+   > block number:        24223845
+   > block timestamp:     1618155580
+   > account:             0xE1A2da2cf4ae4b8E28153Ab9e564f44F6FbCbF62
+   > balance:             1.127571532
+   > gas used:            173197 (0x2a48d)
+   > gas price:           20 gwei
+   > value sent:          0 ETH
+   > total cost:          0.00346394 ETH
+
+
+   > Saving migration to chain.
+   > Saving artifacts
+   -------------------------------------
+   > Total cost:          0.00346394 ETH
+
+
+2_bonds_migration.js
+====================
+
+   Replacing 'Bonds'
+   -----------------
+   > transaction hash:    0x0be2a2b6e7e605506ba4b2b4a54d58477a744e8366552a7f0d6eddad349e3a19
+   > Blocks: 1            Seconds: 12
+   > contract address:    0xF5cBdc7f32Ac828C9260ed0Fe9078D1F298B03E4
+   > block number:        24223859
+   > block timestamp:     1618155700
+   > account:             0xE1A2da2cf4ae4b8E28153Ab9e564f44F6FbCbF62
+   > balance:             1.081829732
+   > gas used:            2244845 (0x2240ed)
+   > gas price:           20 gwei
+   > value sent:          0 ETH
+   > total cost:          0.0448969 ETH
+
+
+   Replacing 'ERC20PaymentStandard'
+   --------------------------------
+   > transaction hash:    0x8e531dca3a9693fd838f4b2243918a34a83b5a2108913aeeb84e588446288a0c
+   > Blocks: 6            Seconds: 49
+   > contract address:    0x9cE8f644E73a0c77ee6CF415b263C45211Ba17b5
+   > block number:        24223861
+   > block timestamp:     1618155716
+   > account:             0xE1A2da2cf4ae4b8E28153Ab9e564f44F6FbCbF62
+   > balance:             1.044762612
+   > gas used:            1853356 (0x1c47ac)
+   > gas price:           20 gwei
+   > value sent:          0 ETH
+   > total cost:          0.03706712 ETH
+
+
+   Replacing 'ERC20CollateralPayment'
+   ----------------------------------
+   > transaction hash:    0xc549ca800c2a0fc79d8a42814a01a9732a8a1e4f583c4daba2b873121b9550c5
+   > Blocks: 1            Seconds: 8
+   > contract address:    0x7EB58A330d8f466504c035CDfB4019761C1a51D8
+   > block number:        24223867
+   > block timestamp:     1618155764
+   > account:             0xE1A2da2cf4ae4b8E28153Ab9e564f44F6FbCbF62
+   > balance:             1.000501672
+   > gas used:            2213047 (0x21c4b7)
+   > gas price:           20 gwei
+   > value sent:          0 ETH
+   > total cost:          0.04426094 ETH
+
+
+   > Saving migration to chain.
+   > Saving artifacts
+   -------------------------------------
+   > Total cost:          0.12622496 ETH
+
+
+Summary
+=======
+> Total deployments:   4
+> Final cost:          0.1296889 ETH
+
+
+
