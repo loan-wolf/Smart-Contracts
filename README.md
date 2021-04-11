@@ -1,9 +1,30 @@
+Loan Wolf - Decentralized custom-collateralised lending
+========================
+
+We created Loan Wolf in order to build infrastructure for decentralized custom-collateralized lending. Currently in DeFi, in order to borrow on Aave or Compound, borrowers must lock at least 2x higher collateral than loan amount. Also, most of the collateral requirements are restricted to accepting ERC20 tokens. 
+
+With zero Solidity knowledge, lenders create loan products that are configured by parameters like payment token type, duration, amount, APR, collateral token, collateral amount, liquidation parameters and required borrowers’ data for scoring. Interest rate is fully customizable and opens up options for variable interest loans. Possibility to issue wrapped token loans opens nearly 2T USD liquidity market! 
+
+Borrowers select a loan product, fill in borrowers’ application and mint debt obligation (bond) ERC1155 token. Chainlink is used to pass Merkle Tree of hashed borrowers’ data to the blockchain for anonymous verification by independent lender validators. In the future, Chainlink infrastructure will also be used for decentralised credit scoring and validation.  
+
+After loan application has been approved, borrowers can sell debt tokens to the lenders, and raise capital. With Loan Wolf, lenders can buy out even a part of or a fraction of a loan! Bonds can be resold partially or fully at the secondary market to other investors. Lenders must stake tokens for interest accrual. 
+Upon repaying principal and interest of the loan, bond ERC1155 tokens are burned. 
+
+Loan Wolf contracts provide infinite customization and modularity since each loan agreement is a separate entity of a smart contract. How about borrowing against your tokenized real estate, collectibles, or future subscription fees or even against another bond you own? You can do that with Loan Wolf. 
+
+LoanWolf Architecture
+========================
+
+![Снимок экрана 2021-04-12 в 0 49 12](https://user-images.githubusercontent.com/1101279/114324177-1698a900-9b29-11eb-8877-bbabdbd554ab.png)
+
 LoanWolf Smart Contracts
 ========================
 
-(for the Chainlink2021 Hackathon)
+![LW-SC-Arch-1](https://user-images.githubusercontent.com/1101279/114324196-2ca66980-9b29-11eb-894d-6896db63e45e.png)
 
-These are the V2 contracts for loanwolf decentralized non-colateralized lending. Unlike V1, the ERC20 payment contract standard here exists as an overridable template for issuing loans with payment in ERC20 tokens. There are 3 important contracts here. Bonds.sol, ERC20PaymentStandard.sol and ERC20CollateralStandard.sol. The depreciated SimpleEthPayment.sol is there as well. There is also a mock dai contract meant for testing as an erc20 token. There is no functionality, it only exists for testing. Truffle tets are in the tests folder. Migrations are not complete so don't just copy those over. Bellow are the descriptions of the functions for the relevant contracts.
+![LW-SC-Arch-2](https://user-images.githubusercontent.com/1101279/114324203-30d28700-9b29-11eb-9582-ebfbc0e611e8.png)
+
+ERC20 payment contract standard here exists as an overridable template for issuing loans with payment in ERC20 tokens. There are 3 important contracts here. Bonds.sol, ERC20PaymentStandard.sol and ERC20CollateralStandard.sol. The depreciated SimpleEthPayment.sol is there as well. There is also a mock DAI contract meant for testing as an erc20 token. There is no functionality, it only exists for testing. Truffle tets are in the tests folder. Migrations are not complete so don't just copy those over. Bellow are the descriptions of the functions for the relevant contracts.
 
 NOTE: Contracts are now using Solc 0.6.6. That is because this commit includes Chainlink and the Chainlink client is not yet working with newer Solidity Compier versions. This has caused the need for some changes. Which will be expressed here.
 
@@ -131,7 +152,7 @@ This function is used to exchange ERC1155s as a lender for the ERC20s made as pa
 
 Chainlink
 ---------
-Ahh yes. Chainlink. That's what this is all about. Chainlink oracles are called at the end of the `configureNew` function to the bellow API address for the purpose of getting a merkle root on chain.  
+Chainlink oracles are called at the end of the `configureNew` function to the bellow API address for the purpose of getting a merkle root on chain.  
 `http://40.121.211.35:5000/api/getloansdetails/:LOAN_ID`  
 This is the LoanWolf API. Independant payment contract creators are welcome to replace with a different API. But it must have the functionality outlined bellow. But first, note, LOAN_ID is, as you may imagine, the loan ID calculated by the `getId` function. This means that upon loan application the backend must publish the merkleRoot to the coorseponding loanID before calling `configureNew`. This means the frontend (or server) must call getId and calculate the ID as well.  
 
