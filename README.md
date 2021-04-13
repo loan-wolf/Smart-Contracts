@@ -5,6 +5,8 @@ LoanWolf Smart Contracts
 
 These are the V2 contracts for loanwolf decentralized non-colateralized lending. Unlike V1, the ERC20 payment contract standard here exists as an overridable template for issuing loans with payment in ERC20 tokens. There are 3 important contracts here. Bonds.sol, ERC20PaymentStandard.sol and ERC20CollateralStandard.sol. The depreciated SimpleEthPayment.sol is there as well. There is also a mock dai contract meant for testing as an erc20 token. There is no functionality, it only exists for testing. Truffle tets are in the tests folder. Migrations are not complete so don't just copy those over. Bellow are the descriptions of the functions for the relevant contracts.
 
+NOTE: Contracts are now using Solc 0.6.6. That is because this commit includes Chainlink and the Chainlink client is not yet working with newer Solidity Compier versions. This has caused the need for some changes. Which will be expressed here.
+
 Bonds.sol (v2)
 ==============
 
@@ -43,12 +45,15 @@ This function sends your ERC1155s to the Bonds contract to stake. MUST approve b
 Staking (Linked List)
 ---------------------
 The `staking` mapping is a nested mapping containing a circular doubly linked list data structure that holds an address's staking info. Traversal of the linked list is to be done with the public mapping offchain. To traverse start at the HEAD (will always be 0) for a given user's address. Then look up the NEXT value for that user. Continue until you loop back to HEAD (0). Values are stored under the IOU struct named `value`. The IOU struct has the following values within it:  
-- `bool staking;` true if currently staking
 - `uint256 ID;` nft ID
 - `uint256 ammount;` quantity staking 
 - `uint256 timeStaked;` timestamp when staking started
 
 The `unstake()` function makes use of the index in this linked list for deletions in constant time with low gas fees. Yaaaaaayyyy! When traversing the linked list and displaying to a user make sure to keep track of the "index" of each entry in the list. As if a user decides to unstake you will need to pass that index into the `unstake()` funciton.
+
+NOTE: Solc 0.6.x does not support returning user defined datatypes. So the `staking` mapping is not public and does not have a getter function. A new function was added:  
+`getStakingAt(address _who, uint256 _index) external view returns(uint, uint, uint256, uint256, uint256)`  
+This function returns all the info above as well as the last/next node pointers (the two uints)
 
 ERC20PaymentStandard.sol
 ========================
@@ -57,6 +62,8 @@ Introduction
 ------------
 The payment contract of a loan can be custom made and it's encouraged to be. But they all should be based off the ERC20PaymentStandard. That's not to say payment contracts must be ERC20 payment contracts but they must have functions like this so bonds can call them and interact with features of the contract. All the functions in this contract are virual so they can be overridden by any child contract. An example of a child contract will be bellow with the ERC20CollateralPayment contract.
 
+NOTE: The payment standard uses chainlink. If you publish a custom payment contract and do not override the use of chainlink, you will need to fund the contract with LINK
+
 Loans/Lookups
 -------------
 
@@ -64,6 +71,7 @@ The contract holds 2 mappings. loanIDs and loanLookup. loanIDs maps each address
 - `bool issued;`
 - `address ERC20Address;`
 - `address borrower;`
+- `bytes32 chainlinkRequestId;`
 - `uint256 paymentPeriod;`
 - `uint256 paymentDueDate;`
 - `uint256 minPayment;`
@@ -104,9 +112,10 @@ This function configures a new loan for a given borrower. ANYONE can configure a
 - `_paymentPeriod` payment must be made by this time or delinquent function will return true
 - `_principal` the origional loan value before interest
 - `_inverseInterestRate` the interest rate expressed as inverse. 2% = 1/5 = inverse of 5
-- `_accrualPeriod` the time it takes for interest to accrue in seconds
+- `_accrualPeriod` the time it takes for interest to accrue in seconds  
+This function also uses chainlink to retreive the 
 
-returns the id of the contract that was just created  
+returns the id of the contract that was just created `chainlinkRequestId` for the loan. More on Chainlink bellow
 
 `payment(uint256, uint256) external;`
 This is the function that borrower calls to make their payments. IMPORTANT: You must approve the transfer with the designated ERC20 contract first.
@@ -118,7 +127,21 @@ Returns true if a loanID reflects a complete and paid off loan
 This function creates an ID for a loan. This is the hash of the address of a borrower, address of this address, and the index in the loanIDs array
 
 `withdrawl(uint256, uint256) external`
-This function is used to exchange ERC1155s as a lender for the ERC20s made as payments. 1 for 1. MUST approve in the Bonds contract before calling  
+This function is used to exchange ERC1155s as a lender for the ERC20s made as payments. 1 for 1. MUST approve in the Bonds contract before calling
+
+Chainlink
+---------
+Ahh yes. Chainlink. That's what this is all about. Chainlink oracles are called at the end of the `configureNew` function to the bellow API address for the purpose of getting a merkle root on chain.  
+`http://40.121.211.35:5000/api/getloansdetails/:LOAN_ID`  
+This is the LoanWolf API. Independant payment contract creators are welcome to replace with a different API. But it must have the functionality outlined bellow. But first, note, LOAN_ID is, as you may imagine, the loan ID calculated by the `getId` function. This means that upon loan application the backend must publish the merkleRoot to the coorseponding loanID before calling `configureNew`. This means the frontend (or server) must call getId and calculate the ID as well.  
+
+Merkle roots
+------------
+The tree root is the backbone of LoanWolf. The merkle tree allows information about a loan to be provably verifyable to anyone, without revealing non-pertinant personal information, and it can do this all very efficiently. However, in order for this to work, a trusted public merkle root must be available. Luckily that's what smart contracts are all about. But we have to get the merkle root to the contract. So a backend must construct a merkle tree from the user's information and publish the root on a public API for the contract to access by Loan Id.  
+This Loan ID must be expressed as a NUMBER. Even though it is a hash. You may be tempted to display it as a hex string but the Chainlink node will not read this string as hex. It has no job spec for base system. So it will read it as ASCII. And as I'm sure you can guess 0xabc.... is very different when read in hex than ascii. So the node will read it as a base 10 interger and then the smart contract will convert that to a Solidity bytes32 type. Since JS and many other languages do not support large 256 bit numbers the node have to read in number strings. So here's some handy code to turn your hex string in the common hash format to a string interger using the BN.js library:  
+`let hashNum = new BN(MERKE_ROOT_AS_HEX_STRING, 16).toString();`  
+
+Now the smart contract does NOT store the merkle root in the loan object since it takes time for the oracle to submit the value. Instead it holds a kind of pointer to the value as the Chainlink Request Id. This request id can be used to look up the merkle root in the public `merkleRoots` mapping. As the merkle root will be published there in bytes32 format once submitted by the node.
 
 ERC20CollateralStandard.sol
 ===========================

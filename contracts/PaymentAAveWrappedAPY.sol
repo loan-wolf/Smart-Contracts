@@ -1,5 +1,6 @@
 /// SPDX-License-Identifier: None
-pragma solidity ^0.8.0;
+pragma solidity ^0.6.6;
+pragma experimental ABIEncoderV2;
 
 import './ERC20PaymentStandard.sol';
 
@@ -65,7 +66,7 @@ contract PaymentAAveWrappedAPY is ERC20PaymentStandard{
     address public aaveContract;
     
     /// @notice constructor takes in AAve lending pool address
-    constructor(address _bondsContract, address _aaveContract) ERC20PaymentStandard(_bondsContract){
+    constructor(address _bondsContract, address _aaveContract) public ERC20PaymentStandard(_bondsContract){
         //0xE0fBa4Fc209b4948668006B2bE61711b7f465bAe;
         aaveContract = _aaveContract;
     }
@@ -106,7 +107,7 @@ contract PaymentAAveWrappedAPY is ERC20PaymentStandard{
             issued: false,
             ERC20Address: _erc20,
             borrower: msg.sender,
-            merkleRoot: keccak256("Hello World"),
+            chainlinkRequestId: 0x0,
             paymentPeriod: _paymentPeriod,
             paymentDueDate: block.timestamp + _paymentPeriod,
             minPayment: _minPayment,
@@ -118,6 +119,7 @@ contract PaymentAAveWrappedAPY is ERC20PaymentStandard{
             paymentComplete: 0
             }
         );
+        requestMerkleRoot(id);
         return id;
     }
     

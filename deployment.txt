@@ -1,0 +1,170 @@
+
+
+Migrations dry-run (simulation)
+===============================
+> Network name:    'kovan-fork'
+> Network id:      42
+> Block gas limit: 12500000 (0xbebc20)
+
+
+1_initial_migration.js
+======================
+
+   Replacing 'Migrations'
+   ----------------------
+   > block number:        24226209
+   > block timestamp:     1618179435
+   > account:             0xE1A2da2cf4ae4b8E28153Ab9e564f44F6FbCbF62
+   > balance:             0.418584178
+   > gas used:            158197 (0x269f5)
+   > gas price:           2 gwei
+   > value sent:          0 ETH
+   > total cost:          0.000316394 ETH
+
+   -------------------------------------
+   > Total cost:         0.000316394 ETH
+
+
+2_bonds_migration.js
+====================
+
+   Replacing 'Bonds'
+   -----------------
+   > block number:        24226211
+   > block timestamp:     1618179446
+   > account:             0xfC7c94D1bc5f3f61bCf5145491c65a5858cFc8A6
+   > balance:             99.995630286
+   > gas used:            2184857 (0x215699)
+   > gas price:           2 gwei
+   > value sent:          0 ETH
+   > total cost:          0.004369714 ETH
+
+
+   Replacing 'ERC20PaymentStandard'
+   --------------------------------
+   > block number:        24226212
+   > block timestamp:     1618179466
+   > account:             0xfC7c94D1bc5f3f61bCf5145491c65a5858cFc8A6
+   > balance:             99.992109978
+   > gas used:            1760154 (0x1adb9a)
+   > gas price:           2 gwei
+   > value sent:          0 ETH
+   > total cost:          0.003520308 ETH
+
+
+   Replacing 'ERC20CollateralPayment'
+   ----------------------------------
+   > block number:        24226213
+   > block timestamp:     1618179487
+   > account:             0xfC7c94D1bc5f3f61bCf5145491c65a5858cFc8A6
+   > balance:             99.9878704
+   > gas used:            2119789 (0x20586d)
+   > gas price:           2 gwei
+   > value sent:          0 ETH
+   > total cost:          0.004239578 ETH
+
+   -------------------------------------
+   > Total cost:           0.0121296 ETH
+
+
+Summary
+=======
+> Total deployments:   4
+> Final cost:          0.012445994 ETH
+
+
+
+
+
+Starting migrations...
+======================
+> Network name:    'kovan'
+> Network id:      42
+> Block gas limit: 12500000 (0xbebc20)
+
+
+1_initial_migration.js
+======================
+
+   Replacing 'Migrations'
+   ----------------------
+   > transaction hash:    0x3f58ae6c8acac6d15b75878831870dc9c1d9d9ba62e2f1196f01b850e06b561d
+   > Blocks: 1            Seconds: 12
+   > contract address:    0x25483B52AEcf76455EE93EE930C47a9337025979
+   > block number:        24226217
+   > block timestamp:     1618179508
+   > account:             0xE1A2da2cf4ae4b8E28153Ab9e564f44F6FbCbF62
+   > balance:             0.415436632
+   > gas used:            173197 (0x2a48d)
+   > gas price:           20 gwei
+   > value sent:          0 ETH
+   > total cost:          0.00346394 ETH
+
+
+   > Saving migration to chain.
+   > Saving artifacts
+   -------------------------------------
+   > Total cost:          0.00346394 ETH
+
+
+2_bonds_migration.js
+====================
+
+   Replacing 'Bonds'
+   -----------------
+   > transaction hash:    0xf9f04c4fe443c040fd70118f9d8a459d530a3121bde937cfa678da77f71ebabe
+   > Blocks: 2            Seconds: 20
+   > contract address:    0x309AA4AE5E61Ae525454faA972BC0fC5920970b1
+   > block number:        24226228
+   > block timestamp:     1618179596
+   > account:             0xE1A2da2cf4ae4b8E28153Ab9e564f44F6FbCbF62
+   > balance:             2.369484592
+   > gas used:            2244857 (0x2240f9)
+   > gas price:           20 gwei
+   > value sent:          0 ETH
+   > total cost:          0.04489714 ETH
+
+
+   Replacing 'ERC20PaymentStandard'
+   --------------------------------
+   > transaction hash:    0xd7b4842b970efa51f0972d422e69cfffa6c16d7d940c27b59ca33d707942a2b0
+   > Blocks: 4            Seconds: 33
+   > contract address:    0xB965af8A6870A43605Cbe76ed63471dEdd1B5a45
+   > block number:        24226232
+   > block timestamp:     1618179628
+   > account:             0xE1A2da2cf4ae4b8E28153Ab9e564f44F6FbCbF62
+   > balance:             2.331881512
+   > gas used:            1880154 (0x1cb05a)
+   > gas price:           20 gwei
+   > value sent:          0 ETH
+   > total cost:          0.03760308 ETH
+
+
+   Replacing 'ERC20CollateralPayment'
+   ----------------------------------
+   > transaction hash:    0x89baae9f12eb93c6f1145d98bda716e8ed10982d43590e0cbf42fab85574547a
+   > Blocks: 5            Seconds: 40
+   > contract address:    0x579C6CA26059f00131Cb0D0228ebE774db67989D
+   > block number:        24226236
+   > block timestamp:     1618179660
+   > account:             0xE1A2da2cf4ae4b8E28153Ab9e564f44F6FbCbF62
+   > balance:             2.287085732
+   > gas used:            2239789 (0x222d2d)
+   > gas price:           20 gwei
+   > value sent:          0 ETH
+   > total cost:          0.04479578 ETH
+
+
+   > Saving migration to chain.
+   > Saving artifacts
+   -------------------------------------
+   > Total cost:            0.127296 ETH
+
+
+Summary
+=======
+> Total deployments:   4
+> Final cost:          0.13075994 ETH
+
+
+

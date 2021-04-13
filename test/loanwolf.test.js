@@ -151,8 +151,9 @@ contract(Bonds, async([dev,borrower1,lender1, lender2, hacker]) => {
             await bonds.setApprovalForAll(bonds.address, true, {from: lender1});
             await bonds.stake(bondIDs[0], half, {from:lender1});
             await bonds.setApprovalForAll(bonds.address, false, {from: lender1});
-            const stakingBal = await bonds.staking(lender1,1);
-            assert.equal(stakingBal["value"]["ammount"], half);
+            const stakingBal = await bonds.getStakingAt(lender1,1);
+            console.log(stakingBal);
+            assert.equal(stakingBal["3"], half);
         });
 
         it('Check and print accruances', async()=>{

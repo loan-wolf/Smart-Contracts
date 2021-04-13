@@ -1,5 +1,5 @@
 /// SPDX-License-Identifier: None
-pragma solidity ^0.8.0;
+pragma solidity ^0.6.6;
 
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import {IERC20PaymentStandard} from './IERC20PaymentStandard.sol';
@@ -37,11 +37,27 @@ contract Bonds is ERC1155 {
 
     /// @notice this is the staking linked list. Access the node to find the next/last.The 0 node is the HEAD and cannot hold values. If HEAD points to
     /// itself then it's empty
-    mapping(address => mapping(uint256 => node)) public staking;
+    mapping(address => mapping(uint256 => node)) staking;
     
     //Constructor. Empty for now except the metadata url
-    constructor() ERC1155("https://test.com/api/{id}.json"){}
+    constructor() ERC1155("https://test.com/api/{id}.json") public{}
     
+    /**
+    * @notice Staking mapping is no longer public. Must call this to get staking info
+    * @param _who is address in first mapping
+    * @param _index is LL index in nested mapping
+    * @return the Linked List Node last pointer
+    * @return the Linked List Node next pointer
+    * @return the IOU struct Loan ID value
+    * @return the IOU struct ammount value
+    * @return the IOU struct timestamp for staking
+    * in that order
+     */
+    function getStakingAt(address _who, uint256 _index) external view returns(uint, uint, uint256, uint256, uint256){
+        node memory n = staking[_who][_index];
+        return(n.last,n.next,n.value.ID,n.value.ammount,n.value.timeStaked);
+    }
+
     /**
     * @notice function creates the tokens for a new loan so they can be sold to generate funding
     * @param _paymentContractAddress is the address of the loan's contract. "Borrower" in this
@@ -124,7 +140,7 @@ contract Bonds is ERC1155 {
         address _from,
         uint256 _id,
         uint256 _value,
-        bytes calldata _data
+        bytes memory _data
         ) 
         public 
         returns(bytes4)
