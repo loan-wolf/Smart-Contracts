@@ -1,19 +1,16 @@
-Loan Wolf - Decentralised Custom-collateralized Lending on Blockchain
+LoanWolf - Lending Infrastructure on Blockchain
 ========================
 
-(for the Chainlink2021 Hackathon)
+We created Loan Wolf in order to build infrastructure for decentralized custom-collateralized lending. 
 
-We created Loan Wolf in order to build infrastructure for decentralized custom-collateralized lending. Currently in DeFi, in order to borrow on Aave or Compound, borrowers must lock at least 2x higher collateral than loan amount. Also, most of the collateral requirements are restricted to accepting ERC-20 tokens.
-
-With zero Solidity knowledge, lenders create loan products that are configured by parameters like payment token type, duration, amount, APR, collateral token, collateral amount, liquidation parameters and required borrowers’ data for scoring. Interest rate is fully customizable and opens up options for variable interest loans. Possibility to issue wrapped token loans opens nearly 2T USD liquidity market!
+With zero Solidity knowledge, lenders create loan products that are configured by parameters like payment token type, duration, amount, APR, collateral token, collateral amount, liquidation parameters and required borrowers’ data for scoring. Interest rate is fully customizable and opens up options for variable interest loans. Possibility to issue wrapped token loans opens nearly 2T USD liquidity market.
 
 Borrowers select a loan product, fill in borrowers’ application and mint debt obligation (bond) ERC1155 token. Chainlink is used to pass Merkle Tree of hashed borrowers’ data to the blockchain for anonymous verification by independent lender validators. In the future, Chainlink infrastructure will also be used for decentralised credit scoring and validation.
 
-After loan application has been approved, borrowers can sell debt tokens to the lenders, and raise capital. With Loan Wolf, lenders can buy out even a part of or a fraction of a loan! Bonds can be resold partially or fully at the secondary market to other investors. Lenders must stake tokens for interest accrual. Upon repaying principal and interest of the loan, bond ERC1155 tokens are burned.
+After loan application has been approved, borrowers can sell debt tokens to the lenders, and raise capital. With LoanWolf, lenders can buy out even a part of or a fraction of a loan. Bonds can be resold partially or fully at the secondary market to other investors. Lenders must stake tokens for interest accrual. Upon repaying principal and interest of the loan, bond ERC1155 tokens are burned.
 
-Loan Wolf contracts provide infinite customization and modularity since each loan agreement is a separate entity of a smart contract. How about borrowing against your tokenized real estate, collectibles, or future subscription fees or even against another bond you own? You can do that with Loan Wolf.
+LoanWolf contracts provide infinite customization and modularity since each loan agreement is a separate entity of a smart contract. How about borrowing against your tokenized real estate, collectibles, or future subscription fees or even against another bond you own? You can do that with Loan Wolf.
 
-Video summarizing the concept: https://www.youtube.com/watch?v=61vcPYX29tA&t=18s
 
 Technical Architecture
 ========================
